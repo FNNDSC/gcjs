@@ -1,0 +1,28 @@
+{
+  "name": "gcjs",
+  "version": "0.1.0",
+  "homepage": "https://github.com/FNNDSC/gcjs",
+  "authors": [
+    "Jorge <jbernal0019@yahoo.es>"
+  ],
+  "description": "Google drive-based realtime collaboration module",
+  "keywords": [
+    "html5",
+    "cloud",
+    "realtime",
+    "google",
+    "drive"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "src/components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "fmjs": "https://github.com/FNNDSC/fmjs.git#master"
+  }
+}
