@@ -24,6 +24,8 @@ var gcjs = gcjs || {};
    * @param {String} Client ID from the Google's developer console.
    */
   gcjs.GDriveCollab = function(clientId) {
+    // MIME type for newly created Realtime files.
+    this.REALTIME_MIMETYPE = 'application/vnd.google-apps.drive-sdk';
     // file manager instance
     this.driveFm = new fmjs.GDriveFileManager(clientId);
     // Has Google Drive Realtime API been loaded?
@@ -57,3 +59,20 @@ var gcjs = gcjs || {};
      }
 
   };
+
+  /**
+   * Create a realtime file in GDrive
+   *
+   * @param {String} file's path.
+   * @param {Object} file's title.
+   * @param {Function} optional callback whose argument is the file response object.
+   */
+   gcjs.GDriveCollab.prototype.createRealtimeFile = function(basePath, title, callback) {
+     var fData = {mimeType: 'application/vnd.google-apps.drive-sdk', title: title};
+
+     this.driveFm.createFile(basePath, fData, function(fileResp) {
+       if (callback) {
+         callback(fileResp);
+       }
+     });
+   };
