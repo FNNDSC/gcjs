@@ -24,22 +24,36 @@ var gcjs = gcjs || {};
    * @param {String} Client ID from the Google's developer console.
    */
   gcjs.GDriveCollab = function(clientId) {
-    // Google's ID for the client app
-    this.CLIENT_ID = clientId;
-    // Permissions to access files uploaded through the API
-    this.SCOPES = 'https://www.googleapis.com/auth/drive.file';
-    // Has OAuth 2.0 client library been loaded?
-    this.clientOAuthAPILoaded = false;
-    // Has the client app been authorized?
-    this.autorized = false;
-    // Has Google Drive API been loaded?
-    this.driveAPILoaded = false;
-    // Current user information (name, email)
-    this.userInfo = null;
+    // file manager instance
+    this.driveFm = new fmjs.GDriveFileManager(clientId);
+    // Has Google Drive Realtime API been loaded?
+    this.driveRtApiLoaded = false;
 
   };
 
-   gcjs.GDriveCollab.prototype.init = function() {
+  /**
+   * Check if the current user has authorized the application and then load the GDrive Realtime API
+   *
+   * @param {Boolean} whether or not to open a popup window for OAuth 2.0 authorization.
+   * @param {Function} callback whose argument is a boolean true if success
+   */
+   gcjs.GDriveCollab.prototype.loadApi = function(immediate, callback) {
+     var self = this;
 
+     if (this.driveRtApiLoaded) {
+       callback(true);
+     } else {
+       this.driveFm.requestFileSystem(immediate, function(granted) {
+         if (granted) {
+           // GDrive FS granted then load the realtime API
+           gapi.load('drive-realtime', function() {
+             self.driveRtApiLoaded = true;
+             callback(true);
+           });
+         } else {
+           callback(false);
+         }
+       });
+     }
 
   };

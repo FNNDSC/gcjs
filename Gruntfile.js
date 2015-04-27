@@ -32,7 +32,7 @@ module.exports = function(grunt) {
         boss: true,
         eqnull: true,
         globals: {
-          console: true, document: true, gapi: true
+          console: true, document: true, gapi: true, fmjs: true
         }
       },
       source: {
