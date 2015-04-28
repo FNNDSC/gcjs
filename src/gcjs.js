@@ -64,13 +64,12 @@ var gcjs = gcjs || {};
    * Create a realtime file in GDrive
    *
    * @param {String} file's path.
-   * @param {Object} file's title.
    * @param {Function} optional callback whose argument is the file response object.
    */
-   gcjs.GDriveCollab.prototype.createRealtimeFile = function(basePath, title, callback) {
-     var fData = {mimeType: 'application/vnd.google-apps.drive-sdk', title: title};
+   gcjs.GDriveCollab.prototype.createRealtimeFile = function(filePath, callback) {
+     var mimeType: 'application/vnd.google-apps.drive-sdk';
 
-     this.driveFm.createFile(basePath, fData, function(fileResp) {
+     this.driveFm.createFile(filePath, mimeType, function(fileResp) {
        if (callback) {
          callback(fileResp);
        }
