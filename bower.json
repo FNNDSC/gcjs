@@ -23,6 +23,7 @@
     "tests"
   ],
   "dependencies": {
+    "requirejs": "~2.1.15",
     "fmjs": "https://github.com/FNNDSC/fmjs.git#master"
   }
 }

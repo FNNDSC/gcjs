@@ -2,64 +2,19 @@
 <html>
   <head>
     <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
-    <title>fmjs</title>
-    <!-- Load Google JavaScript API loader -->
+    <title>gcjs</title>
+    <!-- Load Google's JavaScript API loader -->
     <script type="text/javascript" src="https://apis.google.com/js/api.js"></script>
-    <!-- Load file manager -->
-    <script src="components/fmjs/src/fmjs.js"></script>
-    <!-- Load google drive realtime collaboration module -->
-    <script src="gcjs.js"></script>
   </head>
 
-  <body onLoad='main()'>
+  <body>
 
     <!--Add a file picker for the user to start the upload process -->
     <input type="button" id="userInfoButton" style="display: none" value="Console log user info" />
     <input type="button" id="authorizeButton" style="display: none" value="Authorize" />
 
-    <script type="text/javascript">
-      var CLIENT_ID = '358010366372-o8clkqjol0j533tp6jlnpjr2u2cdmks6.apps.googleusercontent.com';
-      var driveFm = new fmjs.GDriveFileManager(CLIENT_ID);
+    <!-- Load file manager scripts -->
+    <script data-main="main" src="js/components/requirejs/require.js"></script>
 
-      /**
-      * Request GDrive authorization and Api and log current user info on the console when
-      * the corresponding button is clicked
-      */
-      function main() {
-        var authButton = document.getElementById('authorizeButton');
-        var userButton = document.getElementById('userInfoButton');
-
-        driveFm.requestFileSystem(true, function(granted) {
-          if (granted) {
-            // Access token has been successfully retrieved, requests can be sent to the API.
-            userButton.style.display = 'block';
-            userButton.onclick = showUserInfo;
-          } else {
-            // No access token could be retrieved, show the button to start the authorization flow.
-            authButton.style.display = 'block';
-            authButton.onclick = function() {
-              driveFm.requestFileSystem(false, function(granted) {
-                if (granted) {
-                  // Access token has been successfully retrieved, requests can be sent to the API.
-                  authButton.style.display = 'none';
-                  userButton.style.display = 'block';
-                  userButton.onclick = showUserInfo;
-                }
-              });
-            }
-          }
-        });
-      }
-
-      /**
-      * Show current user info on the console
-      */
-      function showUserInfo() {
-        driveFm.getUserInfo(function(user) {
-          console.log(user);
-        })
-      }
-
-    </script>
   </body>
 </html>

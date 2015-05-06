@@ -13,8 +13,9 @@ module.exports = function(grunt) {
       ' Licensed <%= _.pluck(pkg.licenses, "type").join(", ") %> */\n',
 
     // Custome Paths
-    srcFiles: ['src/gcjs.js'], // source files (order here is important for dependencies)
+    srcFiles: ['src/js/gcjs.js'], // source files
     testFiles: ['spec/*.spec.js'], // test files (jasmin' specs)
+    libDir: 'src/js/lib', // libraries that cannot be installed through bower
     componentsDir: 'src/js/components', // bower components
 
     // Task configuration.
@@ -32,7 +33,10 @@ module.exports = function(grunt) {
         boss: true,
         eqnull: true,
         globals: {
-          console: true, document: true, gapi: true, fmjs: true
+          console: true, document: true, gapi: true, FileReader: true, BlobBuilder: true,
+          XMLHttpRequest: true, ArrayBuffer: true, Uint8Array: true, FileError: true,
+          atob: true, btoa: true, window: true, define: true, require: true, describe: true,
+          it: true, expect: true, beforeEach: true
         }
       },
       source: {
@@ -41,71 +45,93 @@ module.exports = function(grunt) {
       gruntfile: {
         src: 'Gruntfile.js'
       },
-      //test: {
-      //  files: ['test/**/*.js']
-      //}
-    },
-
-    jasmine: {
-      src: '<%= jshint.source.src %>',
-      options: {
-        specs: 'test/**/*_spec.js',
-        helpers: 'test/helpers/*.js'
-      }
-    },
-
-    concat: {
-      options: {
-        banner: '<%= banner %>',
-        stripBanners: true
-      },
-      dist: {
-        src: ['<%= componentsDir %>/**/*.js', '<%= jshint.source.src %>'],
-        dest: 'dist/<%= pkg.name %>.js'
-      }
-    },
-
-    uglify: {
-      options: {
-        banner: '<%= banner %>'
-      },
-      dist: {
-        src: '<%= concat.dist.dest %>',
-        dest: 'dist/<%= pkg.name %>.min.js'
+      test: {
+        src: '<%= testFiles %>'
       }
     },
 
     watch: {
-      source: {
-        files: '<%= jshint.source.src %>',
-        tasks: ['jshint:source']
-      },
-      gruntfile: {
-        files: '<%= jshint.gruntfile.src %>',
-        tasks: ['jshint:gruntfile']
-      },
-      /*test: {
-        files: '<%= jshint.test.files %>',
-        tasks: ['jshint:test', 'jasmine']
-      }*/
+      files: ['src/**/*.js','src/**/*.css', 'src/**/*.html', '<%= jshint.gruntfile.src %>'],
+      tasks: ['jshint:source', 'jshint:gruntfile', 'jasmine:test']
+    },
+
+    browserSync: {
+      dev: {
+          bsFiles: {
+              src : [
+                  'src/**/*.js',
+                  'src/**/*.css',
+                  'src/**/*.html'
+              ]
+          },
+          options: {
+              watchTask: true,
+              // test to move bower_components out...
+              // bower_components not used yet...
+              server: ['src', 'bower_components']
+          }
+      }
+    },
+
+    jasmine: {
+      test: {
+        //src: '<%= jshint.source.src %>', this line must be commented when using the define function within the specs files
+        options: {
+          specs: '<%= jshint.test.src %>',
+          template: require('grunt-template-jasmine-requirejs'),
+          templateOptions: {
+            version: '<%= componentsDir %>/requirejs/require.js',
+            requireConfigFile: 'src/main.js', // requireJS's config file
+            requireConfig: {
+              baseUrl: '<%= componentsDir %>' // change base url to execute tests from local FS
+            }
+          }
+        }
+      }
+    },
+
+    requirejs: {
+      compile: {
+        options: {
+          baseUrl: '<%= componentsDir %>',
+          name: 'gcjs',
+          mainConfigFile: 'src/main.js',
+          out: 'dist/js/<%= pkg.name %>.min.js'
+        }
+      }
     }
+
   });
 
   // These plugins provide necessary tasks.
-  grunt.loadNpmTasks('grunt-contrib-concat');
-  grunt.loadNpmTasks('grunt-contrib-uglify');
+  grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-contrib-jasmine');
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-watch');
+  grunt.loadNpmTasks('grunt-browser-sync');
+  grunt.loadNpmTasks('grunt-contrib-requirejs');
+
+  // Serve task.
+  grunt.registerTask('serve', function(/*target*/) {
+    // grunt server:dist not implemented yet...
+
+    // if (target === 'dist') {
+    //   return grunt.task.run(['build', 'browserSync:dist',
+    //   'watch']);
+    // }
+
+    grunt.task.run([
+      'browserSync:dev',
+      'watch'
+    ]);
+  });
 
   // Test task.
-  // grunt.registerTask('test', ['jshint', 'jasmine']);
-  grunt.registerTask('test', ['jshint']);
+  grunt.registerTask('test', ['jshint', 'jasmine']);
   // Build task.
-  // grunt.registerTask('build', ['jshint', 'jasmine', 'uglify']);
-  grunt.registerTask('build', ['jshint', 'concat', 'uglify']);
+  //grunt.registerTask('build', ['jshint', 'jasmine', 'requirejs']);
+  grunt.registerTask('build', ['jshint', 'requirejs']);
   // Default task.
-  // grunt.registerTask('default', ['jshint', 'jasmine', 'uglify']);
   grunt.registerTask('default', ['build']);
 
 };
