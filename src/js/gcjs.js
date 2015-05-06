@@ -80,6 +80,15 @@ define(['fmjs'], function(fmjs) {
      };
 
     /**
+     * Loads a Realtime file
+     *
+     * @param {String} file's id.
+     */
+     gcjs.GDriveCollab.prototype.loadRealtimeFile = function(fileId) {
+       gapi.drive.realtime.load(fileId, this.onFileLoaded, this.initializeModel, this.handleErrors);
+    };
+
+    /**
     * Handles errors thrown by the Realtime API.
     */
     gcjs.GDriveCollab.prototype.handleErrors = function(e) {
@@ -104,8 +113,8 @@ define(['fmjs'], function(fmjs) {
     * @param model {gapi.drive.realtime.Model} the Realtime root model object.
     */
     gcjs.GDriveCollab.prototype.initializeModel = function(model) {
-      var string = model.createString('Hello Realtime World!');
-      model.getRoot().set('text', string);
+      var clist = model.createList();
+      model.getRoot().set('clist', clist);
     };
 
     /**
@@ -117,7 +126,11 @@ define(['fmjs'], function(fmjs) {
      * @param doc {gapi.drive.realtime.Document} the Realtime document.
      */
      gcjs.GDriveCollab.prototype.onFileLoaded = function(doc) {
-       var string = doc.getModel().getRoot().get('text');
+       var model = doc.getModel();
+
+       var string = model.getRoot().get('text');
+
+       model.getRoot().get('cList').addEventListener(gapi.drive.realtime.EventType.VALUES_ADDED, this.updateDisplay);
 
       // Keeping one box updated with a String binder.
       var textArea1 = document.getElementById('editor1');
