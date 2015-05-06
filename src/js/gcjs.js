@@ -42,7 +42,7 @@ define(['fmjs'], function(fmjs) {
      * @param {Boolean} whether or not to open a popup window for OAuth 2.0 authorization.
      * @param {Function} callback whose argument is a boolean true if success
      */
-     gcjs.GDriveCollab.prototype.loadApi = function(immediate, callback) {
+     gcjs.GDriveCollab.prototype.authorizeAndLoadApi = function(immediate, callback) {
        var self = this;
 
        if (this.driveRtApiLoaded) {
@@ -78,6 +78,21 @@ define(['fmjs'], function(fmjs) {
          }
        });
      };
+
+    /**
+    * Handles errors thrown by the Realtime API.
+    */
+    gcjs.GDriveCollab.prototype.handleErrors = function(e) {
+      if(e.type == gapi.drive.realtime.ErrorType.TOKEN_REFRESH_REQUIRED) {
+        authorizer.authorize();
+      } else if(e.type == gapi.drive.realtime.ErrorType.CLIENT_ERROR) {
+        alert("An Error happened: " + e.message);
+        window.location.href= "/";
+      } else if(e.type == gapi.drive.realtime.ErrorType.NOT_FOUND) {
+        alert("The file was not found. It does not exist or you do not have read access to the file.");
+        window.location.href= "/";
+      }
+    };
 
     /**
     * This function is called the first time that the Realtime model is created
