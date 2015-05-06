@@ -14,7 +14,7 @@ module.exports = function(grunt) {
 
     // Custome Paths
     srcFiles: ['src/js/gcjs.js'], // source files
-    testFiles: ['spec/*.spec.js'], // test files (jasmin' specs)
+    testFiles: ['<%= componentsDir %>/fmjs/spec/*.spec.js', 'spec/*.spec.js'], // test files (jasmin' specs)
     libDir: 'src/js/lib', // libraries that cannot be installed through bower
     componentsDir: 'src/js/components', // bower components
 
