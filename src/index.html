@@ -3,15 +3,60 @@
   <head>
     <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
     <title>gcjs</title>
+
+    <!--Application styles -->
+    <style>
+      /*collaboration section*/
+      .collab{
+        float: left;
+        margin: 10px;
+      }
+      .collab-input{
+        display: none;
+        border: 1px solid;
+        margin-top: 5px;
+        padding: 2px;
+        background-color: #DDD;
+      }
+      #gobutton{
+        display: block;
+        margin: 2px auto 0;
+      }
+      #authorizeButton{
+        display: none;
+        margin: 2px auto;
+      }
+      div#inputcontainer{
+        overflow: auto;
+      }
+    </style>
+
     <!-- Load Google's JavaScript API loader -->
-    <script type="text/javascript" src="https://apis.google.com/js/api.js"></script>
+    <script src="https://apis.google.com/js/api.js"></script>
   </head>
 
   <body>
 
-    <!--Add a file picker for the user to start the upload process -->
-    <input type="button" id="userInfoButton" style="display: none" value="Console log user info" />
-    <input type="button" id="authorizeButton" style="display: none" value="Authorize" />
+    <div id="inputcontainer">
+
+      <div class="collab">
+        <button id="newcollabbutton" type="button">Create a new collab room!</button>
+        <div id="newcollabdiv" class="collab-input">
+          <button id="authorizebutton" type="button">Authorize GDrive</button>
+          <label id="newroomlabel">room id:</label>
+        </div>
+      </div>
+
+      <div class="collab">
+        <button id="existingcollabbutton" type="button">Enter existing collab room</button>
+        <div id="existingcollabdiv" class="collab-input">
+          <label id="existingroomlabel" for="existingroominput">room id:</label>
+          <input id="existingroominput" type="text">
+          <button id="gobutton" type="button">Go!</button>
+        </div>
+      </div>
+
+    </div>
 
     <!-- Load file manager scripts -->
     <script data-main="main" src="js/components/requirejs/require.js"></script>

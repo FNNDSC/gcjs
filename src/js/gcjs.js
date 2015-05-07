@@ -27,12 +27,16 @@ define(['fmjs'], function(fmjs) {
      * @param {String} Client ID from the Google's developer console.
      */
     gcjs.GDriveCollab = function(clientId) {
+      // Google drive's realtime file id
+      this.realtimeFileId = '';
       // MIME type for newly created Realtime files.
       this.REALTIME_MIMETYPE = 'application/vnd.google-apps.drive-sdk';
       // file manager instance
       this.driveFm = new fmjs.GDriveFileManager(clientId);
       // Has Google Drive Realtime API been loaded?
       this.driveRtApiLoaded = false;
+      // scene object
+      this.collabObj = null;
 
     };
 
@@ -80,27 +84,44 @@ define(['fmjs'], function(fmjs) {
      };
 
     /**
-     * Loads a Realtime file
+     * Start the realtime collaboration
      *
-     * @param {String} file's id.
+     * @param {String} Google Drive's realtime file id.
      */
-     gcjs.GDriveCollab.prototype.loadRealtimeFile = function(fileId) {
-       gapi.drive.realtime.load(fileId, this.onFileLoaded, this.initializeModel, this.handleErrors);
+     gcjs.GDriveCollab.prototype.startRealtimeCollaboration = function(collabObj, fileId) {
+       var self = this;
+
+       function onFileLoaded(doc) {
+         self._onFileLoaded(doc);
+       }
+
+       function initializeModel(model) {
+         self._initializeModel(model);
+       }
+
+       function handleErrors(err) {
+         self._handleErrors(err);
+       }
+
+       if (fileId) {
+         this.realtimeFileId = fileId;
+         gapi.drive.realtime.load(fileId, onFileLoaded, initializeModel, handleErrors);
+       } else if (collabObj) {
+         this.collabObj = collabObj;
+         this.createRealtimeFile('/realtimeviewer/collab.realtime', function(fileResp) {
+           self.realtimeFileId = fileResp.id;
+           gapi.drive.realtime.load(fileResp.id, onFileLoaded, initializeModel, handleErrors);
+         });
+       }
     };
 
     /**
-    * Handles errors thrown by the Realtime API.
-    */
-    gcjs.GDriveCollab.prototype.handleErrors = function(e) {
-      if(e.type == gapi.drive.realtime.ErrorType.TOKEN_REFRESH_REQUIRED) {
-        authorizer.authorize();
-      } else if(e.type == gapi.drive.realtime.ErrorType.CLIENT_ERROR) {
-        alert("An Error happened: " + e.message);
-        window.location.href= "/";
-      } else if(e.type == gapi.drive.realtime.ErrorType.NOT_FOUND) {
-        alert("The file was not found. It does not exist or you do not have read access to the file.");
-        window.location.href= "/";
-      }
+     * This method is called just after starting the collaboration.
+     *
+     * @param {String} Google Drive's realtime file id.
+     */
+     gcjs.GDriveCollab.prototype.onConnect = function(fileId) {
+       console.log('onConnect NOT overwritten');
     };
 
     /**
@@ -112,9 +133,12 @@ define(['fmjs'], function(fmjs) {
     *
     * @param model {gapi.drive.realtime.Model} the Realtime root model object.
     */
-    gcjs.GDriveCollab.prototype.initializeModel = function(model) {
-      var clist = model.createList();
-      model.getRoot().set('clist', clist);
+    gcjs.GDriveCollab.prototype._initializeModel = function(model) {
+      var self = this;
+
+      if (self.collabObj) {
+        model.getRoot().set('collabObj', self.collabObj);
+      }
     };
 
     /**
@@ -125,29 +149,29 @@ define(['fmjs'], function(fmjs) {
      *
      * @param doc {gapi.drive.realtime.Document} the Realtime document.
      */
-     gcjs.GDriveCollab.prototype.onFileLoaded = function(doc) {
+     gcjs.GDriveCollab.prototype._onFileLoaded = function(doc) {
+       var self = this;
        var model = doc.getModel();
 
-       var string = model.getRoot().get('text');
+       model.getRoot().addEventListener(gapi.drive.realtime.EventType.OBJECT_CHANGED, function() {
+         self.collabObj = model.getRoot().get('collabObj');
+       });
+       self.onConnect(self.realtimeFileId);
+     };
 
-       model.getRoot().get('cList').addEventListener(gapi.drive.realtime.EventType.VALUES_ADDED, this.updateDisplay);
-
-      // Keeping one box updated with a String binder.
-      var textArea1 = document.getElementById('editor1');
-      gapi.drive.realtime.databinding.bindString(string, textArea1);
-
-      // Keeping one box updated with a custom EventListener.
-      var textArea2 = document.getElementById('editor2');
-      var updateTextArea2 = function() {
-        textArea2.value = string;
-      };
-      string.addEventListener(gapi.drive.realtime.EventType.TEXT_INSERTED, updateTextArea2);
-      string.addEventListener(gapi.drive.realtime.EventType.TEXT_DELETED, updateTextArea2);
-      textArea2.onkeyup = function() {
-        string.setText(textArea2.value);
-      };
-      updateTextArea2();
-
+     /**
+     * Handles errors thrown by the Realtime API.
+     */
+     gcjs.GDriveCollab.prototype._handleErrors = function(e) {
+       if(e.type == gapi.drive.realtime.ErrorType.TOKEN_REFRESH_REQUIRED) {
+         authorizer.authorize();
+       } else if(e.type == gapi.drive.realtime.ErrorType.CLIENT_ERROR) {
+         alert("An Error happened: " + e.message);
+         window.location.href= "/";
+       } else if(e.type == gapi.drive.realtime.ErrorType.NOT_FOUND) {
+         alert("The file was not found. It does not exist or you do not have read access to the file.");
+         window.location.href= "/";
+       }
      };
 
   return gcjs;
