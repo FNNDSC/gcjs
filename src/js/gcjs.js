@@ -27,6 +27,7 @@ define(['fmjs'], function(fmjs) {
      * @param {String} Client ID from the Google's developer console.
      */
     gcjs.GDriveCollab = function(clientId) {
+
       // Google drive's realtime file id
       this.realtimeFileId = '';
       // MIME type for newly created Realtime files.
@@ -35,8 +36,10 @@ define(['fmjs'], function(fmjs) {
       this.driveFm = new fmjs.GDriveFileManager(clientId);
       // Has Google Drive Realtime API been loaded?
       this.driveRtApiLoaded = false;
-      // scene object
+      // Collaboration object that is kept in sync.
       this.collabObj = null;
+      // Realtime collaboration model
+      this.model = null;
 
     };
 
@@ -86,6 +89,7 @@ define(['fmjs'], function(fmjs) {
     /**
      * Start the realtime collaboration
      *
+     * @param {Object} Collaboration object containing the data to be kept in sync.
      * @param {String} Google Drive's realtime file id.
      */
      gcjs.GDriveCollab.prototype.startRealtimeCollaboration = function(collabObj, fileId) {
@@ -116,6 +120,16 @@ define(['fmjs'], function(fmjs) {
     };
 
     /**
+     * Set the realtime collaboration object
+     *
+     * @param {Object} Collaboration object containing the data to be kept in sync.
+     */
+     gcjs.GDriveCollab.prototype.setCollabObj = function(collabObj) {
+       this.model.getRoot().set('collabObj', collabObj);
+       this.collabObj = collabObj;
+    };
+
+    /**
      * This method is called just after starting the collaboration.
      *
      * @param {String} Google Drive's realtime file id.
@@ -127,9 +141,7 @@ define(['fmjs'], function(fmjs) {
     /**
     * This function is called the first time that the Realtime model is created
     * for a file. This function should be used to initialize any values of the
-    * model. In this case, we just create the single string model that will be
-    * used to control our text box. The string has a starting value of 'Hello
-    * Realtime World!', and is named 'text'.
+    * model. In this case, we just create a single object model called "collabObj".
     *
     * @param model {gapi.drive.realtime.Model} the Realtime root model object.
     */
@@ -144,8 +156,8 @@ define(['fmjs'], function(fmjs) {
     /**
      * This function is called when the Realtime file has been loaded. It should
      * be used to initialize any user interface components and event handlers
-     * depending on the Realtime model. In this case, create a text control binder
-     * and bind it to our string model that we created in initializeModel.
+     * depending on the Realtime model. In this case, we listen for the OBJECT_CHANGED
+     * event on the root.
      *
      * @param doc {gapi.drive.realtime.Document} the Realtime document.
      */
@@ -153,9 +165,11 @@ define(['fmjs'], function(fmjs) {
        var self = this;
        var model = doc.getModel();
 
+       self.model = model;
        model.getRoot().addEventListener(gapi.drive.realtime.EventType.OBJECT_CHANGED, function() {
          self.collabObj = model.getRoot().get('collabObj');
        });
+       self.collabObj = model.getRoot().get('collabObj');
        self.onConnect(self.realtimeFileId);
      };
 
