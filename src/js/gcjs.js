@@ -77,9 +77,8 @@ define(['fmjs'], function(fmjs) {
      * @param {Function} optional callback whose argument is the file response object.
      */
      gcjs.GDriveCollab.prototype.createRealtimeFile = function(filePath, callback) {
-       var mimeType = 'application/vnd.google-apps.drive-sdk';
 
-       this.driveFm.createFile(filePath, mimeType, function(fileResp) {
+       this.driveFm.createFile(filePath, this.REALTIME_MIMETYPE, function(fileResp) {
          if (callback) {
            callback(fileResp);
          }
@@ -92,7 +91,7 @@ define(['fmjs'], function(fmjs) {
      * @param {Object} Collaboration object containing the data to be kept in sync.
      * @param {String} Google Drive's realtime file id.
      */
-     gcjs.GDriveCollab.prototype.startRealtimeCollaboration = function(collabObj, fileId) {
+     gcjs.GDriveCollab.prototype.startRealtimeCollaboration = function(fileId, collabObj) {
        var self = this;
 
        function onFileLoaded(doc) {
@@ -113,8 +112,16 @@ define(['fmjs'], function(fmjs) {
        } else if (collabObj) {
          this.collabObj = collabObj;
          this.createRealtimeFile('/realtimeviewer/collab.realtime', function(fileResp) {
-           self.realtimeFileId = fileResp.id;
-           gapi.drive.realtime.load(fileResp.id, onFileLoaded, initializeModel, handleErrors);
+           var perms = {
+             'value': '',
+             'type': 'anyone',
+             'role': 'writer'
+           };
+
+           self.driveFm.shareFileById(fileResp.id, perms, function() {
+             self.realtimeFileId = fileResp.id;
+             gapi.drive.realtime.load(fileResp.id, onFileLoaded, initializeModel, handleErrors);
+           });
          });
        }
     };
@@ -135,7 +142,7 @@ define(['fmjs'], function(fmjs) {
      * @param {String} Google Drive's realtime file id.
      */
      gcjs.GDriveCollab.prototype.onConnect = function(fileId) {
-       console.log('onConnect NOT overwritten');
+       console.log('onConnect NOT overwritten. GDrive realtime file id: ' + fileId);
     };
 
     /**
@@ -177,12 +184,26 @@ define(['fmjs'], function(fmjs) {
      * Handles errors thrown by the Realtime API.
      */
      gcjs.GDriveCollab.prototype._handleErrors = function(e) {
-       if(e.type == gapi.drive.realtime.ErrorType.TOKEN_REFRESH_REQUIRED) {
-         authorizer.authorize();
-       } else if(e.type == gapi.drive.realtime.ErrorType.CLIENT_ERROR) {
+       var self = this;
+
+       if(e.type === gapi.drive.realtime.ErrorType.TOKEN_REFRESH_REQUIRED) {
+         self.authorizeAndLoadApi(true, function(granted) {
+           if (granted) {
+             console.log("token succesfuly refreshed");
+           } else {
+             self.authorizeAndLoadApi(false, function(resp) {
+               if (resp) {
+                 console.log("token succesfuly refreshed");
+               } else{
+                 console.error("could not refresh token");
+               }
+             });
+           }
+         });
+       } else if(e.type === gapi.drive.realtime.ErrorType.CLIENT_ERROR) {
          alert("An Error happened: " + e.message);
          window.location.href= "/";
-       } else if(e.type == gapi.drive.realtime.ErrorType.NOT_FOUND) {
+       } else if(e.type === gapi.drive.realtime.ErrorType.NOT_FOUND) {
          alert("The file was not found. It does not exist or you do not have read access to the file.");
          window.location.href= "/";
        }

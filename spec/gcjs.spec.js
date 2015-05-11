@@ -13,7 +13,7 @@ define(['gcjs'], function(gcjs) {
     });
 
     it('driveFm.getUserInfo returns object with property mail', function () {
-        expect(driveFm.getUserInfo(function(user) {
+        expect(collab.driveFm.getUserInfo(function(user) {
           return user.mail;
         })).toEqual('admin@babymri.org');
     });

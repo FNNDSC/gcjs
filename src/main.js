@@ -20,7 +20,7 @@ require(['gcjs'], function(gcjs) {
 
   /**
    * Request GDrive authorization and load the realtime Api, hide authorization button
-   * and start the collaboration on the scene object (kept in sync)
+   * and start the collaboration on the scene object as the room owner
    */
   nCollabButton.onclick = function() {
     var nCollabDiv = document.getElementById('newcollabdiv');
@@ -32,7 +32,7 @@ require(['gcjs'], function(gcjs) {
       if (granted) {
         // realtime API ready.
         authButton.style.display = 'none';
-        nCollab.startRealtimeCollaboration(scene);
+        nCollab.startRealtimeCollaboration("", scene);
       } else {
         // show the button to start the authorization flow.
         authButton.style.display = 'block';
@@ -41,7 +41,7 @@ require(['gcjs'], function(gcjs) {
             if (granted) {
               // realtime API ready.
               authButton.style.display = 'none';
-              nCollab.startRealtimeCollaboration(scene);
+              nCollab.startRealtimeCollaboration("", scene);
             }
           });
         }
@@ -51,17 +51,17 @@ require(['gcjs'], function(gcjs) {
   };
 
   nCollab.onConnect = function(fileId) {
-    var cObj = nCollab.collabObj;
 
-    ++cObj.data;
-    nCollab.setCollabObj(cObj);
-    console.log(++nCollab.collabObj.data);
+    console.log(nCollab.collabObj.data);
+    nCollab.setCollabObj({data: ++nCollab.collabObj.data});
+    console.log(nCollab.collabObj.data);
+
     nRoom.innerHTML = 'room id: ' + fileId;
   };
 
   /**
    * Request GDrive authorization and load the realtime Api, hide room id input and go
-   * button and start the collaboration on the scene object (kept in sync)
+   * button and start the collaboration on the scene object as an additional collaborator
    */
   eCollabButton.onclick = function() {
     var eCollabDiv = document.getElementById('existingcollabdiv');
@@ -78,7 +78,7 @@ require(['gcjs'], function(gcjs) {
         goButton.onclick = function() {
           goButton.style.display = 'none';
           eRoomInput.style.display = 'none';
-          eCollab.startRealtimeCollaboration(scene, eRoomInput.value);
+          eCollab.startRealtimeCollaboration(eRoomInput.value);
         };
       } else {
         // show the button to start the authorization flow.
@@ -88,7 +88,7 @@ require(['gcjs'], function(gcjs) {
               // realtime API ready.
               goButton.style.display = 'none';
               eRoomInput.style.display = 'none';
-              eCollab.startRealtimeCollaboration(scene, eRoomInput.value);
+              eCollab.startRealtimeCollaboration(eRoomInput.value);
             }
           });
         }
@@ -97,11 +97,9 @@ require(['gcjs'], function(gcjs) {
   };
 
   eCollab.onConnect = function(fileId) {
-    var cObj = eCollab.collabObj;
-
-    ++cObj.data;
-    eCollab.setCollabObj(cObj);
-    console.log(++eCollab.collabObj.data);
+    console.log(eCollab.collabObj.data);
+    eCollab.setCollabObj({data: ++eCollab.collabObj.data});
+    console.log(eCollab.collabObj.data);
     eRoomLabel.innerHTML = 'room id: ' + fileId;
   };
 

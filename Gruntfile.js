@@ -36,7 +36,7 @@ module.exports = function(grunt) {
           console: true, document: true, gapi: true, FileReader: true, BlobBuilder: true,
           XMLHttpRequest: true, ArrayBuffer: true, Uint8Array: true, FileError: true,
           atob: true, btoa: true, window: true, define: true, require: true, describe: true,
-          it: true, expect: true, beforeEach: true
+          it: true, expect: true, beforeEach: true, alert: true
         }
       },
       source: {
