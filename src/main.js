@@ -13,7 +13,7 @@ require(['gcjs'], function(gcjs) {
   var eCollabButton = document.getElementById('existingcollabbutton');
   var eRoomLabel = document.getElementById('existingroomlabel');
   var nCollabButton = document.getElementById('newcollabbutton');
-  var nRoom = document.getElementById('newroomlabel');
+  var nRoomLabel = document.getElementById('newroomlabel');
   var scene = {data: 0};
   var nCollab = new gcjs.GDriveCollab(CLIENT_ID);
   var eCollab = new gcjs.GDriveCollab(CLIENT_ID);
@@ -50,13 +50,14 @@ require(['gcjs'], function(gcjs) {
 
   };
 
+  // This method is called when the collaboration has started and is ready
   nCollab.onConnect = function(fileId) {
 
     console.log(nCollab.collabObj.data);
     nCollab.setCollabObj({data: ++nCollab.collabObj.data});
     console.log(nCollab.collabObj.data);
 
-    nRoom.innerHTML = 'room id: ' + fileId;
+    nRoomLabel.innerHTML = 'room id: ' + fileId;
   };
 
   /**
@@ -96,6 +97,7 @@ require(['gcjs'], function(gcjs) {
     });
   };
 
+  // This method is called when the collaboration has started and is ready
   eCollab.onConnect = function(fileId) {
     console.log(eCollab.collabObj.data);
     eCollab.setCollabObj({data: ++eCollab.collabObj.data});

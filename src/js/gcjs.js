@@ -88,8 +88,8 @@ define(['fmjs'], function(fmjs) {
     /**
      * Start the realtime collaboration
      *
-     * @param {Object} Collaboration object containing the data to be kept in sync.
      * @param {String} Google Drive's realtime file id.
+     * @param {Object} Collaboration object containing the data to be kept in sync.
      */
      gcjs.GDriveCollab.prototype.startRealtimeCollaboration = function(fileId, collabObj) {
        var self = this;
@@ -107,9 +107,11 @@ define(['fmjs'], function(fmjs) {
        }
 
        if (fileId) {
+         // using existing realtime file (entering existing room)
          this.realtimeFileId = fileId;
          gapi.drive.realtime.load(fileId, onFileLoaded, initializeModel, handleErrors);
        } else if (collabObj) {
+         // if there is data then create new realtime file (create new room)
          this.collabObj = collabObj;
          this.createRealtimeFile('/realtimeviewer/collab.realtime', function(fileResp) {
            var perms = {
