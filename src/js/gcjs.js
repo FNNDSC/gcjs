@@ -148,6 +148,16 @@ define(['fmjs'], function(fmjs) {
     };
 
     /**
+     * This method is called everytime the collaboration object changes.
+     *
+     * @param {Obj} new collaboration object value.
+     */
+     gcjs.GDriveCollab.prototype.onCollabObjChange = function(collabObj) {
+       console.log('onCollabObjChange NOT overwritten. Collaboration object:');
+       console.log(collabObj);
+    };
+
+    /**
     * This function is called the first time that the Realtime model is created
     * for a file. This function should be used to initialize any values of the
     * model. In this case, we just create a single object model called "collabObj".
@@ -177,6 +187,7 @@ define(['fmjs'], function(fmjs) {
        self.model = model;
        model.getRoot().addEventListener(gapi.drive.realtime.EventType.OBJECT_CHANGED, function() {
          self.collabObj = model.getRoot().get('collabObj');
+         self.onCollabObjChange(self.collabObj);
        });
        self.collabObj = model.getRoot().get('collabObj');
        self.onConnect(self.realtimeFileId);
