@@ -53,9 +53,12 @@ require(['gcjs'], function(gcjs) {
   // This method is called when the collaboration has started and is ready
   nCollab.onConnect = function(fileId) {
 
-    console.log(nCollab.collabObj.data);
-    nCollab.setCollabObj({data: ++nCollab.collabObj.data});
-    console.log(nCollab.collabObj.data);
+    console.log(this.getCollabObj().data);
+
+    // a new object must be created and passed to setCollabObj because the collaboration object is immutable
+    this.setCollabObj({data: ++this.getCollabObj().data});
+
+    console.log(this.getCollabObj().data);
 
     nRoomLabel.innerHTML = 'room id: ' + fileId;
   };
@@ -99,9 +102,14 @@ require(['gcjs'], function(gcjs) {
 
   // This method is called when the collaboration has started and is ready
   eCollab.onConnect = function(fileId) {
-    console.log(eCollab.collabObj.data);
-    eCollab.setCollabObj({data: ++eCollab.collabObj.data});
-    console.log(eCollab.collabObj.data);
+
+    console.log(this.getCollabObj().data);
+
+    // a new object must be created and passed to setCollabObj because the collaboration object is immutable
+    this.setCollabObj({data: ++this.getCollabObj().data});
+
+    console.log(this.getCollabObj().data);
+
     eRoomLabel.innerHTML = 'room id: ' + fileId;
   };
 

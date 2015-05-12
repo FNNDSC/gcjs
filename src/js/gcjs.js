@@ -36,8 +36,6 @@ define(['fmjs'], function(fmjs) {
       this.driveFm = new fmjs.GDriveFileManager(clientId);
       // Has Google Drive Realtime API been loaded?
       this.driveRtApiLoaded = false;
-      // Collaboration object that is kept in sync.
-      this.collabObj = null;
       // Realtime collaboration model
       this.model = null;
 
@@ -99,6 +97,8 @@ define(['fmjs'], function(fmjs) {
        }
 
        function initializeModel(model) {
+         // the room owner initializes the realtime model with collabObj
+         model.getRoot().set('collabObj', collabObj);
          self._initializeModel(model);
        }
 
@@ -112,7 +112,6 @@ define(['fmjs'], function(fmjs) {
          gapi.drive.realtime.load(fileId, onFileLoaded, initializeModel, handleErrors);
        } else if (collabObj) {
          // if there is data then create new realtime file (create new room)
-         this.collabObj = collabObj;
          this.createRealtimeFile('/realtimeviewer/collab.realtime', function(fileResp) {
            var perms = {
              'value': '',
@@ -134,8 +133,20 @@ define(['fmjs'], function(fmjs) {
      * @param {Object} Collaboration object containing the data to be kept in sync.
      */
      gcjs.GDriveCollab.prototype.setCollabObj = function(collabObj) {
-       this.model.getRoot().set('collabObj', collabObj);
-       this.collabObj = collabObj;
+       if (this.model && collabObj) {
+         this.model.getRoot().set('collabObj', collabObj);
+       }
+    };
+
+    /**
+     * Get the realtime collaboration object
+     *
+     * @return {Object} collaboration object that is kept in sync.
+     */
+     gcjs.GDriveCollab.prototype.getCollabObj = function() {
+       if (this.model) {
+         return this.model.getRoot().get('collabObj');
+       }
     };
 
     /**
@@ -160,16 +171,13 @@ define(['fmjs'], function(fmjs) {
     /**
     * This function is called the first time that the Realtime model is created
     * for a file. This function should be used to initialize any values of the
-    * model. In this case, we just create a single object model called "collabObj".
+    * model.
     *
     * @param model {gapi.drive.realtime.Model} the Realtime root model object.
     */
     gcjs.GDriveCollab.prototype._initializeModel = function(model) {
-      var self = this;
-
-      if (self.collabObj) {
-        model.getRoot().set('collabObj', self.collabObj);
-      }
+      console.log('model:');
+      console.log(model);
     };
 
     /**
@@ -184,12 +192,12 @@ define(['fmjs'], function(fmjs) {
        var self = this;
        var model = doc.getModel();
 
-       self.model = model;
        model.getRoot().addEventListener(gapi.drive.realtime.EventType.OBJECT_CHANGED, function() {
-         self.collabObj = model.getRoot().get('collabObj');
-         self.onCollabObjChange(self.collabObj);
+         var collabObj = model.getRoot().get('collabObj');
+
+         self.onCollabObjChange(collabObj);
        });
-       self.collabObj = model.getRoot().get('collabObj');
+       self.model = model;
        self.onConnect(self.realtimeFileId);
      };
 
