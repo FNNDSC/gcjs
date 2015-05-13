@@ -180,9 +180,9 @@ define(['fmjs'], function(fmjs) {
     };
 
     /**
-     * This method is called everytime the collaboration object changes.
+     * This method is called everytime the list of data files change.
      *
-     * @param {Obj} new collaboration object value.
+     * @param {String} new data file id.
      */
      gcjs.GDriveCollab.prototype.onCollabFileListPush = function(fileId) {
        console.log('onCollabFileListPush NOT overwritten. New collab file id: ' + fileId);
@@ -192,7 +192,7 @@ define(['fmjs'], function(fmjs) {
     * This function is called the first time that the Realtime model is created
     * for a file. It should be used to initialize any values of the model. In this case,
     * a collaborative map is created to hold the collaboration object and a collaborative
-    * list of files is created to track the files uploaded to GDrive by the room owner.
+    * list of data files is created to track the files uploaded to GDrive by the room owner.
     *
     * @param model {gapi.drive.realtime.Model} the Realtime root model object.
     */
