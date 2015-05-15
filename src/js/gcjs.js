@@ -30,14 +30,20 @@ define(['fmjs'], function(fmjs) {
 
       // Google drive's realtime file id
       this.realtimeFileId = '';
-      // MIME type for newly created Realtime files.
+      // Google drive's realtime file full path
+      this.realtimeFilePath = '/realtimeviewer/model/collab.realtime';
+      // MIME type for the created Realtime files.
       this.REALTIME_MIMETYPE = 'application/vnd.google-apps.drive-sdk';
-      // file manager instance
+      // Google drive's data files' base directory
+      this.dataFilesBaseDir = '/realtimeviewer/data';
+      // File manager instance
       this.driveFm = new fmjs.GDriveFileManager(clientId);
       // Has Google Drive Realtime API been loaded?
       this.driveRtApiLoaded = false;
       // Realtime collaboration model
       this.model = null;
+      // Whether the realtime file was created by this user
+      this.collabOwner = false;
 
     };
 
@@ -98,7 +104,7 @@ define(['fmjs'], function(fmjs) {
 
        function initializeModel(model) {
          self._initializeModel(model);
-         // the room owner initializes the realtime model with collabObj
+         // the collaboration owner initializes the realtime model with collabObj
          model.getRoot().get('collabMap').set('collabObj', collabObj);
        }
 
@@ -107,18 +113,19 @@ define(['fmjs'], function(fmjs) {
        }
 
        if (fileId) {
-         // using existing realtime file (entering existing room)
+         // using existing realtime file (other user is the collaboration owner)
          this.realtimeFileId = fileId;
          gapi.drive.realtime.load(fileId, onFileLoaded, initializeModel, handleErrors);
        } else if (collabObj) {
-         // if there is data then create new realtime file (create new room)
-         this.createRealtimeFile('/realtimeviewer/collab.realtime', function(fileResp) {
+         // if there is data then create new realtime file (this user is the collaboration owner)
+         this.createRealtimeFile(this.realtimeFilePath, function(fileResp) {
            var perms = {
              'value': '',
              'type': 'anyone',
              'role': 'writer'
            };
 
+           self.collabOwner = true;
            self.driveFm.shareFileById(fileResp.id, perms, function() {
              self.realtimeFileId = fileResp.id;
              gapi.drive.realtime.load(fileResp.id, onFileLoaded, initializeModel, handleErrors);
@@ -150,13 +157,65 @@ define(['fmjs'], function(fmjs) {
     };
 
     /**
-     * Push a new collaboration file
+     * Push a new collaboration data file id
      *
      * @param {String} new file id to be added
      */
-     gcjs.GDriveCollab.prototype.collabFileListPush = function(fileId) {
-       if (this.model) {
-         this.model.getRoot().get('collabFileList').push(fileId);
+     gcjs.GDriveCollab.prototype.collabDataFileListPush = function(fileId) {
+       var numSharedCollabs = 0;
+       var perms;
+       var self = this;
+
+       if (this.model && this.collabOwner) {
+         var collaboratorList = this.model.getRoot().get('collaboratorList');
+
+         if (collaboratorList.length) {
+           for (var i=0; i<collaboratorList.length; i++) {
+             perms = {
+               'value': collaboratorList.get(i).mail,
+               'type': 'user',
+               'role': 'reader'
+             };
+             this.driveFm.shareFileById(fileId, perms, function() {
+               if (++numSharedCollabs === collaboratorList.length) {
+                 console.log("File with id: " + fileId + " shared with all current collaborators");
+                 self.model.getRoot().get('collabDataFileList').push(fileId);
+               }
+             });
+           }
+         } else {
+           self.model.getRoot().get('collabDataFileList').push(fileId);
+         }
+       }
+    };
+
+    /**
+     * Share existing data files with new collaborator
+     *
+     * @param {String} new collaborator info object
+     */
+     gcjs.GDriveCollab.prototype.shareDataFiles = function(collaboratorInfo) {
+       var numSharedFiles = 0;
+       var perms = { // collaboration owner shares files with this collaborator
+         'value': collaboratorInfo.mail,
+         'type': 'user',
+         'role': 'reader'
+       };
+
+       if (this.model && this.collabOwner) {
+         var collabDataFileList = this.model.getRoot().get('collabDataFileList');
+         var collaboratorList = this.model.getRoot().get('collaboratorList');
+
+         for (var i=0; i<collabDataFileList.length; i++) {
+           var fileId = collabDataFileList.get(i);
+
+           this.driveFm.shareFileById(fileId, perms, function() {
+             console.log("File with id: " + fileId + " shared with " + perms.value);
+             if (++numSharedFiles === collabDataFileList.length) {
+               collaboratorList.set(collaboratorList.indexOf(collaboratorInfo), {mail: perms.value, hasDataFilesAccess: true});
+             }
+           });
+         }
        }
     };
 
@@ -184,24 +243,38 @@ define(['fmjs'], function(fmjs) {
      *
      * @param {String} new data file id.
      */
-     gcjs.GDriveCollab.prototype.onCollabFileListPush = function(fileId) {
-       console.log('onCollabFileListPush NOT overwritten. New collab file id: ' + fileId);
+     gcjs.GDriveCollab.prototype.onCollabDataFileListPush = function(fileId) {
+       console.log('onCollabDataFileListPush NOT overwritten. New collab data file id: ' + fileId);
     };
 
     /**
-    * This function is called the first time that the Realtime model is created
-    * for a file. It should be used to initialize any values of the model. In this case,
-    * a collaborative map is created to hold the collaboration object and a collaborative
-    * list of data files is created to track the files uploaded to GDrive by the room owner.
+     * This method is called everytime the collaboration owner has share data files with a collaborator.
+     *
+     * @param {String} new data file id.
+     */
+     gcjs.GDriveCollab.prototype.onDataFilesShare = function(value) {
+       console.log('onDataFilesShare NOT overwritten. Value:');
+       console.log(value);
+    };
+
+    /**
+    * This function is called the first time that the Realtime model is created for a file.
+    * It should be used to initialize any values of the model. In this case, a collaborative
+    * map is created to hold the collaboration object, a collaborative list of data files
+    * is created to track the files uploaded to GDrive by the collaboration owner and a
+    * collaborative list of permission ids is created to track currently connected collaborator
+    * permission ids
     *
     * @param model {gapi.drive.realtime.Model} the Realtime root model object.
     */
     gcjs.GDriveCollab.prototype._initializeModel = function(model) {
       var cMap = model.createMap();
       var cFileList = model.createList();
+      var collaboratorList = model.createList();
 
       model.getRoot().set('collabMap', cMap);
-      model.getRoot().set('collabFileList', cFileList);
+      model.getRoot().set('collabDataFileList', cFileList);
+      model.getRoot().set('collaboratorList', collaboratorList);
     };
 
     /**
@@ -216,15 +289,36 @@ define(['fmjs'], function(fmjs) {
        var self = this;
        var model = doc.getModel();
        var collabMap = model.getRoot().get('collabMap');
-       var collabFileList = model.getRoot().get('collabFileList');
+       var collabDataFileList = model.getRoot().get('collabDataFileList');
+       var collaboratorList = model.getRoot().get('collaboratorList');
 
+       // listen for changes on the collaboration object
        collabMap.addEventListener(gapi.drive.realtime.EventType.OBJECT_CHANGED, function() {
          self.onCollabObjChange(collabMap.get('collabObj'));
        });
 
-       collabFileList.addEventListener(gapi.drive.realtime.EventType.VALUES_ADDED, function(event) {
-         self.onCollabFileListPush(event.values[0]);
+       // listen for new data files on the collaboration owner's Gdrive
+       collabDataFileList.addEventListener(gapi.drive.realtime.EventType.VALUES_ADDED, function(event) {
+         self.onCollabDataFileListPush(event.values[0]);
        });
+
+       // listen for new collaborator join events
+       collaboratorList.addEventListener(gapi.drive.realtime.EventType.VALUES_ADDED, function(event) {
+         self.shareDataFiles(event.values[0]);
+       });
+
+       // listen for a collaborator status change event
+       // this happens when all existing collaboration owner's Gdrive files are shared with a new collaborator
+       collaboratorList.addEventListener(gapi.drive.realtime.EventType.VALUES_SET, function(event) {
+         self.onDataFilesShare(event.values[0]);
+       });
+
+       // generate the collaborator join event for this user
+       if (!self.collabOwner) {
+         self.driveFm.getUserInfo(function(user) {
+           collaboratorList.push({mail: user.emailAddress, hasDataFilesAccess: false});
+         });
+       }
 
        self.model = model;
        self.onConnect(self.realtimeFileId);

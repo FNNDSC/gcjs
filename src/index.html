@@ -26,9 +26,14 @@
         display: none;
         margin: 2px auto;
       }
+      div#directoryselection{
+        clear: left;
+        margin: 10px;
+      }
       div#inputcontainer{
         overflow: auto;
       }
+
     </style>
 
     <!-- Load Google's JavaScript API loader -->
@@ -54,6 +59,10 @@
           <input id="existingroominput" type="text">
           <button id="gobutton" type="button">Go!</button>
         </div>
+      </div>
+
+      <div id="directoryselection">
+        <input id="dirbtn" type="file"  webkitdirectory="" mozdirectory="" directory="" multiple>
       </div>
 
     </div>

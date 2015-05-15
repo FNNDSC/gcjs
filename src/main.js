@@ -17,6 +17,7 @@ require(['gcjs'], function(gcjs) {
   var scene = {data: 0};
   var nCollab = new gcjs.GDriveCollab(CLIENT_ID);
   var eCollab = new gcjs.GDriveCollab(CLIENT_ID);
+  var dataFileArr = [];
 
   /**
    * Request GDrive authorization and load the realtime Api, hide authorization button
@@ -52,15 +53,39 @@ require(['gcjs'], function(gcjs) {
 
   // This method is called when the collaboration has started and is ready
   nCollab.onConnect = function(fileId) {
+    var self = this;
 
-    console.log(this.getCollabObj().data);
+    // function to load a file into GDrive
+    function loadFile(fileObj) {
+      var reader = new FileReader();
+      var url;
+
+      reader.onload = function() {
+        self.driveFm.writeFile(self.dataFilesBaseDir + '/' + fileObj.name, reader.result, function(fileResp) {
+          self.collabDataFileListPush(fileResp.id);
+        });
+      };
+
+      if (fileObj.file) {
+        fileObj.name = fileObj.file.name;
+        reader.readAsArrayBuffer(fileObj.file);
+      } else {
+        url = fileObj.url || fileObj;
+        fileObj.name = url.substring(filePath.lastIndexOf('/') + 1);
+        fmjs.urlToBlob(url, function(blob) {
+          reader.readAsArrayBuffer(blob);
+        });
+      }
+    }
 
     // a new object must be created and passed to setCollabObj because the collaboration object is immutable
     this.setCollabObj({data: ++this.getCollabObj().data});
-
-    console.log(this.getCollabObj().data);
-
     nRoomLabel.innerHTML = 'room id: ' + fileId;
+    this.driveFm.createPath(this.dataFilesBaseDir, function() {
+      for (var i=0; i<dataFileArr.length; i++) {
+        loadFile(dataFileArr[i]);
+      }
+    });
   };
 
   /**
@@ -102,15 +127,35 @@ require(['gcjs'], function(gcjs) {
 
   // This method is called when the collaboration has started and is ready
   eCollab.onConnect = function(fileId) {
-
-    console.log(this.getCollabObj().data);
-
     // a new object must be created and passed to setCollabObj because the collaboration object is immutable
     this.setCollabObj({data: ++this.getCollabObj().data});
-
-    console.log(this.getCollabObj().data);
-
     eRoomLabel.innerHTML = 'room id: ' + fileId;
+  };
+
+  // This method is called when the collaboration has started and is ready
+  eCollab.onCollabDataFileListPush = function(fileId) {
+
+  };
+
+    // Event handler for the directory loader button
+  var dirBtn = document.getElementById('dirbtn');
+
+  dirBtn.onchange = function(e) {
+    var files = e.target.files;
+    var fileObj;
+
+    for (var i=0; i<files.length; i++) {
+      fileObj = files[i];
+      if ('webkitRelativePath' in fileObj) {
+        fileObj.fullPath = fileObj.webkitRelativePath;
+      } else if (!('fullPath' in fileObj)) {
+        fileObj.fullPath = fileObj.name;
+      }
+      dataFileArr.push({
+        'url': fileObj.fullPath,
+        'file': fileObj
+      });
+    }
   };
 
 });
