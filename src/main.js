@@ -7,7 +7,7 @@ require.config({
 });
 
 
-require(['gcjs'], function(gcjs) {
+require(['fmjs', 'gcjs'], function(fmjs, gcjs) {
 
   var CLIENT_ID = '358010366372-o8clkqjol0j533tp6jlnpjr2u2cdmks6.apps.googleusercontent.com';
   var eCollabButton = document.getElementById('existingcollabbutton');
@@ -132,11 +132,16 @@ require(['gcjs'], function(gcjs) {
     eRoomLabel.innerHTML = 'room id: ' + fileId;
   };
 
+
   eCollab.onDataFilesShare = function(collaboratorInfo, fileIdArr) {
 
     var logFileData = function(fileData) {
-      console.log("File's metadata: ", fileData.meta);
-      console.log("File's data: ", fileData.data);
+
+      if (strEndsWith(fileData.meta.title, ['json'])) {
+          console.log(JSON.parse(fileData.data));
+      } else {
+        console.log(fmjs.str2ab(fileData.data));
+      }
     }
 
     if (this.collaboratorInfo.mail === collaboratorInfo.mail) {
@@ -166,6 +171,26 @@ require(['gcjs'], function(gcjs) {
         'file': fileObj
       });
     }
+  };
+
+
+  /**
+   * Utility function. Return true if the string str ends with any of the
+   * specified suffixes in arrayOfStr otherwise return false
+   *
+   * @param {String} input string
+   * @param {Array} array of string suffixes
+   */
+  strEndsWith = function(str, arrayOfStr) {
+    var index;
+
+    for (var i=0; i<arrayOfStr.length; i++) {
+      index = str.lastIndexOf(arrayOfStr[i]);
+      if ((index !== -1) && ((str.length-index) === arrayOfStr[i].length)) {
+        return true;
+      }
+    }
+    return false;
   };
 
 });
