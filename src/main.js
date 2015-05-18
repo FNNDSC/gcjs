@@ -132,10 +132,20 @@ require(['gcjs'], function(gcjs) {
     eRoomLabel.innerHTML = 'room id: ' + fileId;
   };
 
-  // This method is called when the collaboration has started and is ready
-  eCollab.onCollabDataFileListPush = function(fileId) {
+  eCollab.onDataFilesShare = function(collaboratorInfo, fileIdArr) {
 
+    var logFileData = function(fileData) {
+      console.log("File's metadata: ", fileData.meta);
+      console.log("File's data: ", fileData.data);
+    }
+
+    if (this.collaboratorInfo.mail === collaboratorInfo.mail) {
+      for (var i=0; i<fileIdArr.length; i++) {
+        this.driveFm.readFileByID(fileIdArr[i], logFileData);
+      }
+    }
   };
+
 
     // Event handler for the directory loader button
   var dirBtn = document.getElementById('dirbtn');
