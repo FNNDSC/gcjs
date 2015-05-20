@@ -42,6 +42,8 @@ define(['fmjs'], function(fmjs) {
       this.driveRtApiLoaded = false;
       // Realtime collaboration model
       this.model = null;
+      // Realtime collaboration document
+      this.doc = null;
       // Whether the realtime file was created by this user
       this.collabOwner = false;
       // Current collaborator's information (email)
@@ -137,6 +139,26 @@ define(['fmjs'], function(fmjs) {
     };
 
     /**
+     * Leave the realtime collaboration.
+     */
+     gcjs.GDriveCollab.prototype.leaveRealtimeCollaboration = function() {
+
+       if (this.model) {
+         if (!this.collabOwner) {
+           var collaboratorList = this.model.getRoot().get('collaboratorList');
+
+           for (var i=0; i<collaboratorList.length; i++) {
+             if (collaboratorList.get(i).mail === this.collaboratorInfo.mail) {
+               break;
+             }
+           }
+           collaboratorList.remove(i);
+         }
+         this.doc.close();
+       }
+     };
+
+    /**
      * Set the realtime collaboration object.
      *
      * @param {Object} collaboration object containing the data to be kept in sync.
@@ -215,12 +237,12 @@ define(['fmjs'], function(fmjs) {
          var changeCollaboratorStatus = function() {
            if (++numSharedFiles === collabDataFileList.length) {
              // all files have been shared with this collaborator so set its hasDataFilesAccess to true
-             for (var i=0; i<collabDataFileList.length; i++) {
-               if (collaboratorList.get(i).mail === perms.value) {
+             for (var i=0; i<collaboratorList.length; i++) {
+               if (collaboratorList.get(i).mail === collaboratorInfo.mail) {
                  break;
                }
              }
-             collaboratorList.set(i, {mail: perms.value, hasDataFilesAccess: true});
+             collaboratorList.set(i, {mail: collaboratorInfo.mail, hasDataFilesAccess: true});
            }
          };
 
@@ -341,6 +363,7 @@ define(['fmjs'], function(fmjs) {
        }
 
        self.model = model;
+       self.doc = doc;
        // generate the onConnect event for this user
        self.onConnect(self.realtimeFileId);
      };
