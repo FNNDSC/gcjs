@@ -17,15 +17,15 @@ define(['fmjs'], function(fmjs) {
    *
    * @namespace
    */
-  var gcjs = gcjs || {};
+   var gcjs = gcjs || {};
 
-    /**
-     * Class implementing the google drive realtime collaboration
-     * Uses Google Drive Realtime API
-     *
-     * @constructor
-     * @param {String} Client ID from the Google's developer console.
-     */
+   /**
+    * Class implementing the google drive realtime collaboration
+    * Uses Google Drive Realtime API
+    *
+    * @constructor
+    * @param {String} Client ID from the Google's developer console.
+    */
     gcjs.GDriveCollab = function(clientId) {
 
       // Google drive's realtime file id
@@ -275,8 +275,8 @@ define(['fmjs'], function(fmjs) {
     * It should be used to initialize any values of the model. In this case, a collaborative
     * map is created to hold the collaboration object, a collaborative list of data files
     * is created to track the files uploaded to GDrive by the collaboration owner and a
-    * collaborative list of permission ids is created to track currently connected collaborator
-    * permission ids
+    * collaborative list of collaborator info objects is created to track currently connected
+    * collaborators
     *
     * @param model {gapi.drive.realtime.Model} the Realtime root model object.
     */
@@ -294,7 +294,8 @@ define(['fmjs'], function(fmjs) {
      * This function is called when the Realtime file has been loaded. It should
      * be used to initialize any user interface components and event handlers
      * depending on the Realtime model. In this case, we listen for the OBJECT_CHANGED
-     * event on a collaborative map and for the VALUES_ADDED event on a collaborative list.
+     * event on a collaborative map and for the VALUES_ADDED and VALUES_SET events on
+     * two collaborative lists.
      *
      * @param doc {gapi.drive.realtime.Document} the Realtime document.
      */
@@ -344,8 +345,8 @@ define(['fmjs'], function(fmjs) {
        self.onConnect(self.realtimeFileId);
      };
 
-     /**
-     * Handles errors thrown by the Realtime API.
+    /**
+     * Handle errors thrown by the Realtime API.
      */
      gcjs.GDriveCollab.prototype._handleErrors = function(e) {
        var self = this;
