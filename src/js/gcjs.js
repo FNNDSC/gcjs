@@ -334,8 +334,8 @@ define(['fmjs'], function(fmjs) {
        // generate the collaborator join event for this user
        if (!self.collabOwner) {
          self.driveFm.getUserInfo(function(user) {
-           self.collaboratorInfo.mail = user.emailAddress;
-           collaboratorList.push({mail: user.emailAddress, hasDataFilesAccess: false});
+           self.collaboratorInfo.mail = user.mail;
+           collaboratorList.push({mail: user.mail, hasDataFilesAccess: false});
          });
        }
 
