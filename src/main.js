@@ -1,6 +1,7 @@
 require.config({
   baseUrl: 'js/components',
   paths: {
+    gapi: 'https://apis.google.com/js/api',
     fmjs: 'fmjs/src/js/fmjs',
     gcjs: '../gcjs'
   }
