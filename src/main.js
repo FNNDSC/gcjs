@@ -59,11 +59,11 @@ require(['fmjs', 'gcjs'], function(fmjs, gcjs) {
     // function to load a file into GDrive
     function loadFile(fileObj) {
       var reader = new FileReader();
-      var url;
+      var url = fileObj.url || fileObj;
 
       reader.onload = function() {
         self.driveFm.writeFile(self.dataFilesBaseDir + '/' + fileObj.name, reader.result, function(fileResp) {
-          self.collabDataFileListPush(fileResp.id);
+          self.collabDataFileListPush({id: fileResp.id, url: url});
         });
       };
 
@@ -71,7 +71,6 @@ require(['fmjs', 'gcjs'], function(fmjs, gcjs) {
         fileObj.name = fileObj.file.name;
         reader.readAsArrayBuffer(fileObj.file);
       } else {
-        url = fileObj.url || fileObj;
         fileObj.name = url.substring(filePath.lastIndexOf('/') + 1);
         fmjs.urlToBlob(url, function(blob) {
           reader.readAsArrayBuffer(blob);
@@ -134,20 +133,25 @@ require(['fmjs', 'gcjs'], function(fmjs, gcjs) {
   };
 
 
-  eCollab.onDataFilesShare = function(collaboratorInfo, fileIdArr) {
+  eCollab.onDataFilesShare = function(collaboratorInfo, fObjArr) {
 
-    var logFileData = function(fileData) {
+    var logFileData = function(url, fileData) {
 
+      console.log('File meta:  ', fileData.meta);
+      console.log('File url:  ', url);
       if (strEndsWith(fileData.meta.title, ['json'])) {
-          console.log(JSON.parse(fileData.data));
+        console.log('File data:  ', JSON.parse(fileData.data));
       } else {
-        console.log(fmjs.str2ab(fileData.data));
+        console.log('File data:  ', fmjs.str2ab(fileData.data));
       }
     }
 
     if (this.collaboratorInfo.mail === collaboratorInfo.mail) {
-      for (var i=0; i<fileIdArr.length; i++) {
-        this.driveFm.readFileByID(fileIdArr[i], logFileData);
+      for (var i=0; i<fObjArr.length; i++) {
+        var url = fObjArr[i].url;
+        // logFileData.bind(null, url)); allows to bind first arg of logFileData to fixed url
+        // effectively becoming a new callback with a single fileData argument
+        this.driveFm.readFileByID(fObjArr[i].id, logFileData.bind(null, url));
       }
     }
   };
