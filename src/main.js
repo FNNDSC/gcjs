@@ -34,7 +34,7 @@ require(['fmjs', 'gcjs'], function(fmjs, gcjs) {
       if (granted) {
         // realtime API ready.
         authButton.style.display = 'none';
-        nCollab.startRealtimeCollaboration("", scene);
+        nCollab.startRealtimeCollaboration(scene);
       } else {
         // show the button to start the authorization flow.
         authButton.style.display = 'block';
@@ -43,7 +43,7 @@ require(['fmjs', 'gcjs'], function(fmjs, gcjs) {
             if (granted) {
               // realtime API ready.
               authButton.style.display = 'none';
-              nCollab.startRealtimeCollaboration("", scene);
+              nCollab.startRealtimeCollaboration(scene);
             }
           });
         }
@@ -111,7 +111,7 @@ require(['fmjs', 'gcjs'], function(fmjs, gcjs) {
         goButton.onclick = function() {
           goButton.style.display = 'none';
           eRoomInput.style.display = 'none';
-          eCollab.startRealtimeCollaboration(eRoomInput.value);
+          eCollab.joinRealtimeCollaboration(eRoomInput.value);
         };
       } else {
         // show the button to start the authorization flow.
@@ -121,7 +121,7 @@ require(['fmjs', 'gcjs'], function(fmjs, gcjs) {
               // realtime API ready.
               goButton.style.display = 'none';
               eRoomInput.style.display = 'none';
-              eCollab.startRealtimeCollaboration(eRoomInput.value);
+              eCollab.joinRealtimeCollaboration(eRoomInput.value);
             }
           });
         }
@@ -137,7 +137,7 @@ require(['fmjs', 'gcjs'], function(fmjs, gcjs) {
   };
 
 
-  eCollab.onDataFilesShare = function(collaboratorInfo, fObjArr) {
+  eCollab.onShareDataFiles = function(collaboratorInfo, fObjArr) {
 
     var logFileData = function(url, fileData) {
 

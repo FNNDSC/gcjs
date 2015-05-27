@@ -96,10 +96,9 @@ define(['fmjs'], function(fmjs) {
     /**
      * Start the realtime collaboration.
      *
-     * @param {String} Google Drive's realtime file id.
      * @param {Object} Collaboration object containing the data to be kept in sync.
      */
-     gcjs.GDriveCollab.prototype.startRealtimeCollaboration = function(fileId, collabObj) {
+     gcjs.GDriveCollab.prototype.startRealtimeCollaboration = function(collabObj) {
        var self = this;
 
        function onFileLoaded(doc) {
@@ -116,11 +115,7 @@ define(['fmjs'], function(fmjs) {
          self._handleErrors(err);
        }
 
-       if (fileId) {
-         // using existing realtime file (other user is the collaboration owner)
-         this.realtimeFileId = fileId;
-         gapi.drive.realtime.load(fileId, onFileLoaded, initializeModel, handleErrors);
-       } else if (collabObj) {
+       if (collabObj) {
          // if there is data then create new realtime file (this user is the collaboration owner)
          this.createRealtimeFile(this.realtimeFilePath, function(fileResp) {
            var perms = {
@@ -135,6 +130,33 @@ define(['fmjs'], function(fmjs) {
              gapi.drive.realtime.load(fileResp.id, onFileLoaded, initializeModel, handleErrors);
            });
          });
+       }
+    };
+
+    /**
+     * Join a realtime collaboration.
+     *
+     * @param {String} Google Drive's realtime file id.
+     */
+     gcjs.GDriveCollab.prototype.joinRealtimeCollaboration = function(fileId) {
+       var self = this;
+
+       function onFileLoaded(doc) {
+         self._onFileLoaded(doc);
+       }
+
+       function initializeModel(model) {
+         self._initializeModel(model);
+       }
+
+       function handleErrors(err) {
+         self._handleErrors(err);
+       }
+
+       if (fileId) {
+         // using existing realtime file (other user is the collaboration owner)
+         this.realtimeFileId = fileId;
+         gapi.drive.realtime.load(fileId, onFileLoaded, initializeModel, handleErrors);
        }
     };
 
@@ -272,8 +294,8 @@ define(['fmjs'], function(fmjs) {
      *
      * @param {Obj} new collaboration object value.
      */
-     gcjs.GDriveCollab.prototype.onCollabObjChange = function(collabObj) {
-       console.log('onCollabObjChange NOT overwritten. Collaboration object:', collabObj);
+     gcjs.GDriveCollab.prototype.onChangeCollabObj = function(collabObj) {
+       console.log('onChangeCollabObj NOT overwritten. Collaboration object:', collabObj);
     };
 
     /**
@@ -294,8 +316,8 @@ define(['fmjs'], function(fmjs) {
      * @param {Array} list of shared file objects. Each object has properties id: the
      * Gdrive file id and url: the original url of the file.
      */
-     gcjs.GDriveCollab.prototype.onDataFilesShare = function(collaboratorInfo, fObjArr) {
-       console.log('onDataFilesShare NOT overwritten.');
+     gcjs.GDriveCollab.prototype.onShareDataFiles = function(collaboratorInfo, fObjArr) {
+       console.log('onShareDataFiles NOT overwritten.');
        console.log('Shared collaborator info:', collaboratorInfo);
        console.log('Shared file array:', fObjArr);
     };
@@ -338,7 +360,7 @@ define(['fmjs'], function(fmjs) {
 
        // listen for changes on the collaboration object
        collabMap.addEventListener(gapi.drive.realtime.EventType.OBJECT_CHANGED, function() {
-         self.onCollabObjChange(collabMap.get('collabObj'));
+         self.onChangeCollabObj(collabMap.get('collabObj'));
        });
 
        // listen for new data files on the collaboration owner's Gdrive
@@ -359,7 +381,7 @@ define(['fmjs'], function(fmjs) {
          for (var i=0; i<collabDataFileList.length; i++) {
            fObjArr.push(collabDataFileList.get(i));
          }
-         self.onDataFilesShare(event.newValues[0], fObjArr);
+         self.onShareDataFiles(event.newValues[0], fObjArr);
        });
 
        // generate the collaborator join event for this user
