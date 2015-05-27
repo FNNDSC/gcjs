@@ -55,6 +55,7 @@ require(['fmjs', 'gcjs'], function(fmjs, gcjs) {
   // This method is called when the collaboration has started and is ready
   nCollab.onConnect = function(fileId) {
     var self = this;
+    var fObjArr = [];
 
     // function to load a file into GDrive
     function loadFile(fileObj) {
@@ -63,7 +64,10 @@ require(['fmjs', 'gcjs'], function(fmjs, gcjs) {
 
       reader.onload = function() {
         self.driveFm.writeFile(self.dataFilesBaseDir + '/' + fileObj.name, reader.result, function(fileResp) {
-          self.collabDataFileListPush({id: fileResp.id, url: url});
+          fObjArr.push({id: fileResp.id, url: url});
+          if (fObjArr.length===dataFileArr.length) {
+            self.setDataFileList(fObjArr);
+          }
         });
       };
 
