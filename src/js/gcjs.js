@@ -203,44 +203,24 @@ define(['fmjs'], function(fmjs) {
     };
 
     /**
-     * Set the collaboration data file object list. The passed object array is pushed into
-     * collabDataFileList after sharing all files in collaboration owner's Gdrive with all
-     * the connected collaborators. Each file object has properties id: the Gdrive file id
-     * and url: the original url of the file.
+     * Set the GDrive collaboration data file object list. The passed file object array is
+     * pushed into collabDataFileList. Each file object has properties id: the Gdrive file
+     * id and url: the original url of the file.
      *
-     * @param {Object} new data file object.
+     * @param {Array} array of data file objects.
      */
      gcjs.GDriveCollab.prototype.setDataFileList = function(fObjArr) {
 
        if (this.model && this.collabOwner) {
 
-         var numFileSharings = 0;
-         var perms = {
-           'value': "",
-           'type': 'user',
-           'role': 'reader'
-           };
+         this.model.getRoot().get('collabDataFileList').pushAll(fObjArr);
+
          var collaboratorList = this.model.getRoot().get('collaboratorList');
-         var self = this;
-
-         var pushFileObjs = function() {
-           if (++numFileSharings === collaboratorList.length*fObjArr.length) {
-             self.model.getRoot().get('collabDataFileList').pushAll(fObjArr);
-           }
-         };
-
-         if (collaboratorList.length) {
-           for (var i=0; i<collaboratorList.length; i++) {
-             perms.value = collaboratorList.get(i).mail;
-             for (var j=0; j<fObjArr.length; j++) {
-               this.driveFm.shareFileById(fObjArr[j].id, perms, pushFileObjs);
-             }
-           }
-         } else {
-           self.model.getRoot().get('collabDataFileList').pushAll(fObjArr);
+         for (var i=0; i<collaboratorList.length; i++) {
+           this.shareDataFiles(collaboratorList.get(i));
          }
        }
-    };
+     };
 
     /**
      * Share existing data files with new collaborator.
@@ -294,30 +274,20 @@ define(['fmjs'], function(fmjs) {
      *
      * @param {Obj} new collaboration object value.
      */
-     gcjs.GDriveCollab.prototype.onChangeCollabObj = function(collabObj) {
-       console.log('onChangeCollabObj NOT overwritten. Collaboration object:', collabObj);
+     gcjs.GDriveCollab.prototype.onCollabObjChanged = function(collabObj) {
+       console.log('onCollabObjChanged NOT overwritten. Collaboration object:', collabObj);
     };
 
     /**
-     * This method is called when the list of collaboration data files is set.
-     *
-     * @param {Array} data file object array. Each object has properties id: the
-     * Gdrive file id and url: the original url of the file.
-     */
-     gcjs.GDriveCollab.prototype.onSetDataFileList = function(fObjArr) {
-       console.log('onSetDataFileList NOT overwritten. List of data file objects: ', fObjArr);
-    };
-
-    /**
-     * This method is called everytime the collaboration owner has share data files with a
-     * new collaborator.
+     * This method is called everytime the collaboration owner has share all its GDrive
+     * data files with a new collaborator.
      *
      * @param {String} new collaborator info object.
      * @param {Array} list of shared file objects. Each object has properties id: the
      * Gdrive file id and url: the original url of the file.
      */
-     gcjs.GDriveCollab.prototype.onShareDataFiles = function(collaboratorInfo, fObjArr) {
-       console.log('onShareDataFiles NOT overwritten.');
+     gcjs.GDriveCollab.prototype.onDataFilesShared = function(collaboratorInfo, fObjArr) {
+       console.log('onDataFilesShared NOT overwritten.');
        console.log('Shared collaborator info:', collaboratorInfo);
        console.log('Shared file array:', fObjArr);
     };
@@ -360,12 +330,7 @@ define(['fmjs'], function(fmjs) {
 
        // listen for changes on the collaboration object
        collabMap.addEventListener(gapi.drive.realtime.EventType.OBJECT_CHANGED, function() {
-         self.onChangeCollabObj(collabMap.get('collabObj'));
-       });
-
-       // listen for new data files on the collaboration owner's Gdrive
-       collabDataFileList.addEventListener(gapi.drive.realtime.EventType.VALUES_ADDED, function(event) {
-         self.onSetDataFileList(event.values);
+         self.onCollabObjChanged(collabMap.get('collabObj'));
        });
 
        // listen for new collaborator join events
@@ -381,7 +346,7 @@ define(['fmjs'], function(fmjs) {
          for (var i=0; i<collabDataFileList.length; i++) {
            fObjArr.push(collabDataFileList.get(i));
          }
-         self.onShareDataFiles(event.newValues[0], fObjArr);
+         self.onDataFilesShared(event.newValues[0], fObjArr);
        });
 
        // generate the collaborator join event for this user

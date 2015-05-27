@@ -66,6 +66,7 @@ require(['fmjs', 'gcjs'], function(fmjs, gcjs) {
         self.driveFm.writeFile(self.dataFilesBaseDir + '/' + fileObj.name, reader.result, function(fileResp) {
           fObjArr.push({id: fileResp.id, url: url});
           if (fObjArr.length===dataFileArr.length) {
+            // all data files have been uploaded to GDrive
             self.setDataFileList(fObjArr);
           }
         });
@@ -137,7 +138,7 @@ require(['fmjs', 'gcjs'], function(fmjs, gcjs) {
   };
 
 
-  eCollab.onShareDataFiles = function(collaboratorInfo, fObjArr) {
+  eCollab.onDataFilesShared = function(collaboratorInfo, fObjArr) {
 
     var logFileData = function(url, fileData) {
 
