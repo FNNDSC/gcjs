@@ -10,14 +10,15 @@ require.config({
 
 require(['fmjs', 'gcjs'], function(fmjs, gcjs) {
 
-  var CLIENT_ID = '358010366372-o8clkqjol0j533tp6jlnpjr2u2cdmks6.apps.googleusercontent.com';
+  var CLIENT_ID = '358010366372-ic7r5npijns67822bmgeu2v9q38fkqhb.apps.googleusercontent.com';
+  var apiKey = 'AIzaSyDDOw0gfOPqWSiz-eh1zp_oBWXNPFcaaKs';
   var eCollabButton = document.getElementById('existingcollabbutton');
   var eRoomLabel = document.getElementById('existingroomlabel');
   var nCollabButton = document.getElementById('newcollabbutton');
   var nRoomLabel = document.getElementById('newroomlabel');
   var scene = {data: 0};
-  var nCollab = new gcjs.GDriveCollab(CLIENT_ID);
-  var eCollab = new gcjs.GDriveCollab(CLIENT_ID);
+  var nCollab = new gcjs.GDriveCollab(CLIENT_ID, apiKey);
+  var eCollab = new gcjs.GDriveCollab(CLIENT_ID, apiKey);
   var dataFileArr = [];
 
   /**

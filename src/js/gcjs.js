@@ -25,8 +25,9 @@ define(['fmjs'], function(fmjs) {
     *
     * @constructor
     * @param {String} Client ID from the Google's developer console.
+    * @param {String} Api key from the Google's developer console.
     */
-    gcjs.GDriveCollab = function(clientId) {
+    gcjs.GDriveCollab = function(clientId, apiKey) {
 
       // Google drive's realtime file id
       this.realtimeFileId = '';
@@ -37,7 +38,7 @@ define(['fmjs'], function(fmjs) {
       // Google drive's data files' base directory
       this.dataFilesBaseDir = '/realtimeviewer/data';
       // File manager instance
-      this.driveFm = new fmjs.GDriveFileManager(clientId);
+      this.driveFm = new fmjs.GDriveFileManager(clientId, apiKey);
       // Has Google Drive Realtime API been loaded?
       this.driveRtApiLoaded = false;
       // Realtime collaboration model
