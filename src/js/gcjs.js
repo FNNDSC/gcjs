@@ -25,9 +25,8 @@ define(['fmjs'], function(fmjs) {
     *
     * @constructor
     * @param {String} Client ID from the Google's developer console.
-    * @param {String} Api key from the Google's developer console.
     */
-    gcjs.GDriveCollab = function(clientId, apiKey) {
+    gcjs.GDriveCollab = function(clientId) {
 
       // Google drive's realtime file id
       this.realtimeFileId = '';
@@ -38,7 +37,7 @@ define(['fmjs'], function(fmjs) {
       // Google drive's data files' base directory
       this.dataFilesBaseDir = '/realtimeviewer/data';
       // File manager instance
-      this.driveFm = new fmjs.GDriveFileManager(clientId, apiKey);
+      this.driveFm = new fmjs.GDriveFileManager(clientId);
       // Has Google Drive Realtime API been loaded?
       this.driveRtApiLoaded = false;
       // Realtime collaboration model
@@ -61,22 +60,19 @@ define(['fmjs'], function(fmjs) {
      gcjs.GDriveCollab.prototype.authorizeAndLoadApi = function(immediate, callback) {
        var self = this;
 
-       if (this.driveRtApiLoaded) {
-         callback(true);
-       } else {
-         this.driveFm.requestFileSystem(immediate, function(granted) {
-           if (granted) {
-             // GDrive FS granted then load the realtime API
+       this.driveFm.requestFileSystem(immediate, function(granted) {
+         if (granted) {
+           // GDrive FS granted then load the realtime API if not already loaded
+           if (!self.driveRtApiLoaded) {
              gapi.load('drive-realtime', function() {
                self.driveRtApiLoaded = true;
                callback(true);
              });
-           } else {
-             callback(false);
            }
-         });
-       }
-
+         } else {
+           callback(false);
+         }
+       });
     };
 
     /**
@@ -371,17 +367,11 @@ define(['fmjs'], function(fmjs) {
        var self = this;
 
        if(e.type === gapi.drive.realtime.ErrorType.TOKEN_REFRESH_REQUIRED) {
-         self.authorizeAndLoadApi(true, function(granted) {
+         self.driveFm.authorize(true, function(granted) {
            if (granted) {
-             console.log("token succesfuly refreshed");
+             console.log("Auth token successfuly refreshed!");
            } else {
-             self.authorizeAndLoadApi(false, function(resp) {
-               if (resp) {
-                 console.log("token succesfuly refreshed");
-               } else{
-                 console.error("could not refresh token");
-               }
-             });
+             console.error("Could not refresh auth token!");
            }
          });
        } else if(e.type === gapi.drive.realtime.ErrorType.CLIENT_ERROR) {

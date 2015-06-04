@@ -10,15 +10,14 @@ require.config({
 
 require(['fmjs', 'gcjs'], function(fmjs, gcjs) {
 
-  var CLIENT_ID = '358010366372-ic7r5npijns67822bmgeu2v9q38fkqhb.apps.googleusercontent.com';
-  var apiKey = 'AIzaSyDDOw0gfOPqWSiz-eh1zp_oBWXNPFcaaKs';
+  var CLIENT_ID = '1050768372633-ap5v43nedv10gagid9l70a2vae8p9nah.apps.googleusercontent.com';
   var eCollabButton = document.getElementById('existingcollabbutton');
   var eRoomLabel = document.getElementById('existingroomlabel');
   var nCollabButton = document.getElementById('newcollabbutton');
   var nRoomLabel = document.getElementById('newroomlabel');
   var scene = {data: 0};
-  var nCollab = new gcjs.GDriveCollab(CLIENT_ID, apiKey);
-  var eCollab = new gcjs.GDriveCollab(CLIENT_ID, apiKey);
+  var nCollab = new gcjs.GDriveCollab(CLIENT_ID);
+  var eCollab = new gcjs.GDriveCollab(CLIENT_ID);
   var dataFileArr = [];
 
   /**
@@ -40,8 +39,8 @@ require(['fmjs', 'gcjs'], function(fmjs, gcjs) {
         // show the button to start the authorization flow.
         authButton.style.display = 'block';
         authButton.onclick = function() {
-          nCollab.authorizeAndLoadApi(false, function(granted) {
-            if (granted) {
+          nCollab.authorizeAndLoadApi(false, function(granted2) {
+            if (granted2) {
               // realtime API ready.
               authButton.style.display = 'none';
               nCollab.startRealtimeCollaboration(scene);
@@ -118,8 +117,8 @@ require(['fmjs', 'gcjs'], function(fmjs, gcjs) {
       } else {
         // show the button to start the authorization flow.
         goButton.onclick = function() {
-          eCollab.authorizeAndLoadApi(false, function(granted) {
-            if (granted) {
+          eCollab.authorizeAndLoadApi(false, function(granted2) {
+            if (granted2) {
               // realtime API ready.
               goButton.style.display = 'none';
               eRoomInput.style.display = 'none';
