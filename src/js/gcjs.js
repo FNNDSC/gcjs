@@ -44,6 +44,8 @@ define(['fmjs'], function(fmjs) {
       this.model = null;
       // Realtime collaboration document
       this.doc = null;
+      // Whether the realtime collaboration is currently on
+      this.collabIsOn = false;
       // Whether the realtime file was created by this user
       this.collabOwner = false;
       // Current collaborator's information (email)
@@ -174,6 +176,7 @@ define(['fmjs'], function(fmjs) {
            collaboratorList.remove(i);
          }
          this.doc.close();
+         this.collabIsOn = false;
        }
      };
 
@@ -356,6 +359,7 @@ define(['fmjs'], function(fmjs) {
 
        self.model = model;
        self.doc = doc;
+       self.collabIsOn = true;
        // generate the onConnect event for this user
        self.onConnect(self.realtimeFileId);
      };
