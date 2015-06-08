@@ -70,6 +70,8 @@ define(['fmjs'], function(fmjs) {
                self.driveRtApiLoaded = true;
                callback(true);
              });
+           } else {
+             callback(true);
            }
          } else {
            callback(false);
@@ -176,7 +178,11 @@ define(['fmjs'], function(fmjs) {
            collaboratorList.remove(i);
          }
          this.doc.close();
+         this.realtimeFileId = '';
+         this.doc = null;
+         this.model = null;
          this.collabIsOn = false;
+         this.collabOwner = false;
        }
      };
 
