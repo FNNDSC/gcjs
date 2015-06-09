@@ -276,7 +276,7 @@ define(['fmjs'], function(fmjs) {
     };
 
     /**
-     * This method is called everytime the collaboration object changes.
+     * This method is called everytime the collaboration object is changed by a remote collaborator.
      *
      * @param {Obj} new collaboration object value.
      */
@@ -335,8 +335,10 @@ define(['fmjs'], function(fmjs) {
        var collaboratorList = model.getRoot().get('collaboratorList');
 
        // listen for changes on the collaboration object
-       collabMap.addEventListener(gapi.drive.realtime.EventType.OBJECT_CHANGED, function() {
-         self.onCollabObjChanged(collabMap.get('collabObj'));
+       collabMap.addEventListener(gapi.drive.realtime.EventType.OBJECT_CHANGED, function(event) {
+         if (!event.isLocal) {
+           self.onCollabObjChanged(collabMap.get('collabObj'));
+         }
        });
 
        // listen for new collaborator join events
