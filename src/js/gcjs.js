@@ -209,6 +209,17 @@ define(['fmjs'], function(fmjs) {
     };
 
     /**
+     * Get currently connected collaborator list
+     *
+     * @return {Array} list of currently connected collaborators.
+     */
+     gcjs.GDriveCollab.prototype.getCollaboratorList = function() {
+       if (this.model) {
+         return this.model.getRoot().get('collaboratorList').asArray();
+       }
+    };
+
+    /**
      * Set the GDrive collaboration data file object list. The passed file object array is
      * pushed into collabDataFileList. Each file object has properties id: the Gdrive file
      * id and url: the original url of the file.
@@ -231,7 +242,7 @@ define(['fmjs'], function(fmjs) {
     /**
      * Share existing data files with new collaborator.
      *
-     * @param {String} new collaborator info object.
+     * @param {Obj} new collaborator info object.
      */
      gcjs.GDriveCollab.prototype.shareDataFiles = function(collaboratorInfo) {
 
@@ -267,6 +278,17 @@ define(['fmjs'], function(fmjs) {
     };
 
     /**
+     * Send a new chat message to all the collaborators.
+     *
+     * @param {String} message text.
+     */
+     gcjs.GDriveCollab.prototype.sendChatMsg = function(text) {
+       if (this.model && text) {
+         this.model.getRoot().get('chatList').push({user: this.collaboratorInfo.mail, msg: text});
+       }
+    };
+
+    /**
      * This method is called just after starting the collaboration.
      *
      * @param {String} Google Drive's realtime file id.
@@ -288,7 +310,7 @@ define(['fmjs'], function(fmjs) {
      * This method is called everytime the collaboration owner has share all its GDrive
      * data files with a new collaborator.
      *
-     * @param {String} new collaborator info object.
+     * @param {Obj} new collaborator info object.
      * @param {Array} list of shared file objects. Each object has properties id: the
      * Gdrive file id and url: the original url of the file.
      */
@@ -299,12 +321,21 @@ define(['fmjs'], function(fmjs) {
     };
 
     /**
+     * This method is called everytime a new chat message is received.
+     *
+     * @param {Obj} new chat message object.
+     */
+     gcjs.GDriveCollab.prototype.onNewChatMessage = function(msgObj) {
+       console.log('onNewChatMessage NOT overwritten. New chat msg object:', msgObj);
+    };
+
+    /**
     * This function is called the first time that the Realtime model is created for a file.
     * It should be used to initialize any values of the model. In this case, a collaborative
     * map is created to hold the collaboration object, a collaborative list of data files
-    * is created to track the files uploaded to GDrive by the collaboration owner and a
-    * collaborative list of collaborator info objects is created to track currently connected
-    * collaborators
+    * is created to track the files uploaded to GDrive by the collaboration owner, a collaborative
+    * list of collaborator info objects is created to track currently connected collaborators
+    * and a collaborative list of chat message objects is created to implement a text chat.
     *
     * @param model {gapi.drive.realtime.Model} the Realtime root model object.
     */
@@ -312,10 +343,12 @@ define(['fmjs'], function(fmjs) {
       var cMap = model.createMap();
       var cFileList = model.createList();
       var collaboratorList = model.createList();
+      var chatList = model.createList();
 
       model.getRoot().set('collabMap', cMap);
       model.getRoot().set('collabDataFileList', cFileList);
       model.getRoot().set('collaboratorList', collaboratorList);
+      model.getRoot().set('chatList', chatList);
     };
 
     /**
@@ -323,7 +356,7 @@ define(['fmjs'], function(fmjs) {
      * be used to initialize any user interface components and event handlers
      * depending on the Realtime model. In this case, we listen for the OBJECT_CHANGED
      * event on a collaborative map and for the VALUES_ADDED and VALUES_SET events on
-     * two collaborative lists.
+     * collaborative lists.
      *
      * @param doc {gapi.drive.realtime.Document} the Realtime document.
      */
@@ -333,6 +366,7 @@ define(['fmjs'], function(fmjs) {
        var collabMap = model.getRoot().get('collabMap');
        var collabDataFileList = model.getRoot().get('collabDataFileList');
        var collaboratorList = model.getRoot().get('collaboratorList');
+       var chatList = model.getRoot().get('chatList');
 
        // listen for changes on the collaboration object
        collabMap.addEventListener(gapi.drive.realtime.EventType.OBJECT_CHANGED, function(event) {
@@ -357,19 +391,26 @@ define(['fmjs'], function(fmjs) {
          self.onDataFilesShared(event.newValues[0], fObjArr);
        });
 
-       // generate the collaborator join event for this user
-       if (!self.collabOwner) {
-         self.driveFm.getUserInfo(function(user) {
-           self.collaboratorInfo.mail = user.mail;
-           collaboratorList.push({mail: user.mail, hasDataFilesAccess: false});
-         });
-       }
+       // listen for new chat message join events
+       chatList.addEventListener(gapi.drive.realtime.EventType.VALUES_ADDED, function(event) {
+         if (!event.isLocal) {
+           self.onNewChatMessage(event.values[0]);
+         }
+       });
 
        self.model = model;
        self.doc = doc;
-       self.collabIsOn = true;
-       // generate the onConnect event for this user
-       self.onConnect(self.realtimeFileId);
+
+       self.driveFm.getUserInfo(function(user) {
+         self.collaboratorInfo.mail = user.mail;
+         if (!self.collabOwner) {
+           // generate the collaborator join event for this user
+           collaboratorList.push({mail: user.mail, hasDataFilesAccess: false});
+         }
+         self.collabIsOn = true;
+         // generate the onConnect event for this user
+         self.onConnect(self.realtimeFileId);
+       });
      };
 
     /**

@@ -22,16 +22,22 @@
         display: block;
         margin: 2px auto 0;
       }
-      #authorizeButton{
+      #authorizebutton{
         display: none;
         margin: 2px auto;
       }
+
       div#directoryselection{
         clear: left;
         margin: 10px;
       }
       div#inputcontainer{
         overflow: auto;
+      }
+
+      #msgbutton{
+        /*height: 100%;*/
+        width: 120px;
       }
     </style>
 
@@ -60,6 +66,15 @@
 
       <div id="directoryselection">
         <input id="dirbtn" type="file"  webkitdirectory="" mozdirectory="" directory="" multiple>
+      </div>
+
+      <div>
+        <textarea id="chattextarea" rows="8" cols="50">
+        </textarea>
+        <div>
+          <button id="msgbutton" type="button">Send msg</button>
+          <input id="chatinput" type="text" size="43">
+        </div>
       </div>
 
     </div>

@@ -16,8 +16,7 @@ require(['fmjs', 'gcjs'], function(fmjs, gcjs) {
   var nCollabButton = document.getElementById('newcollabbutton');
   var nRoomLabel = document.getElementById('newroomlabel');
   var scene = {data: 0};
-  var nCollab = new gcjs.GDriveCollab(CLIENT_ID);
-  var eCollab = new gcjs.GDriveCollab(CLIENT_ID);
+  var collab = new gcjs.GDriveCollab(CLIENT_ID);
   var dataFileArr = [];
 
   /**
@@ -30,30 +29,88 @@ require(['fmjs', 'gcjs'], function(fmjs, gcjs) {
 
     nCollabDiv.style.display = "block";
 
-    nCollab.authorizeAndLoadApi(true, function(granted) {
+    collab.authorizeAndLoadApi(true, function(granted) {
       if (granted) {
         // realtime API ready.
         authButton.style.display = 'none';
-        nCollab.startRealtimeCollaboration(scene);
+        collab.startRealtimeCollaboration(scene);
       } else {
         // show the button to start the authorization flow.
         authButton.style.display = 'block';
         authButton.onclick = function() {
-          nCollab.authorizeAndLoadApi(false, function(granted2) {
+          collab.authorizeAndLoadApi(false, function(granted2) {
             if (granted2) {
               // realtime API ready.
               authButton.style.display = 'none';
-              nCollab.startRealtimeCollaboration(scene);
+              collab.startRealtimeCollaboration(scene);
             }
           });
         }
       }
     });
-
   };
 
+  /**
+   * Request GDrive authorization and load the realtime Api, hide room id input and go
+   * button and start the collaboration on the scene object as an additional collaborator
+   */
+  eCollabButton.onclick = function() {
+    var eCollabDiv = document.getElementById('existingcollabdiv');
+    var eRoomInput = document.getElementById('existingroominput');
+    var goButton = document.getElementById('gobutton');
+
+
+    eCollabDiv.style.display = "block";
+    eRoomInput.focus();
+
+    collab.authorizeAndLoadApi(true, function(granted) {
+      if (granted) {
+        // realtime API ready.
+        goButton.onclick = function() {
+          goButton.style.display = 'none';
+          eRoomInput.style.display = 'none';
+          collab.joinRealtimeCollaboration(eRoomInput.value);
+        };
+      } else {
+        // show the button to start the authorization flow.
+        goButton.onclick = function() {
+          collab.authorizeAndLoadApi(false, function(granted2) {
+            if (granted2) {
+              // realtime API ready.
+              goButton.style.display = 'none';
+              eRoomInput.style.display = 'none';
+              collab.joinRealtimeCollaboration(eRoomInput.value);
+            }
+          });
+        }
+      }
+    });
+  };
+
+  // Event handler for the directory loader button
+  var dirBtn = document.getElementById('dirbtn');
+
+  dirBtn.onchange = function(e) {
+    var files = e.target.files;
+    var fileObj;
+
+    for (var i=0; i<files.length; i++) {
+      fileObj = files[i];
+      if ('webkitRelativePath' in fileObj) {
+        fileObj.fullPath = fileObj.webkitRelativePath;
+      } else if (!('fullPath' in fileObj)) {
+        fileObj.fullPath = fileObj.name;
+      }
+      dataFileArr.push({
+        'url': fileObj.fullPath,
+        'file': fileObj
+      });
+    }
+  };
+
+
   // This method is called when the collaboration has started and is ready
-  nCollab.onConnect = function(fileId) {
+  collab.onConnect = function(fileId) {
     var self = this;
     var fObjArr = [];
 
@@ -85,63 +142,35 @@ require(['fmjs', 'gcjs'], function(fmjs, gcjs) {
 
     // a new object must be created and passed to setCollabObj because the collaboration object is immutable
     this.setCollabObj({data: ++this.getCollabObj().data});
-    nRoomLabel.innerHTML = 'room id: ' + fileId;
-    this.driveFm.createPath(this.dataFilesBaseDir, function() {
-      for (var i=0; i<dataFileArr.length; i++) {
-        loadFile(dataFileArr[i]);
-      }
-    });
-  };
-
-  /**
-   * Request GDrive authorization and load the realtime Api, hide room id input and go
-   * button and start the collaboration on the scene object as an additional collaborator
-   */
-  eCollabButton.onclick = function() {
-    var eCollabDiv = document.getElementById('existingcollabdiv');
-    var eRoomInput = document.getElementById('existingroominput');
-    var goButton = document.getElementById('gobutton');
-
-
-    eCollabDiv.style.display = "block";
-    eRoomInput.focus();
-
-    eCollab.authorizeAndLoadApi(true, function(granted) {
-      if (granted) {
-        // realtime API ready.
-        goButton.onclick = function() {
-          goButton.style.display = 'none';
-          eRoomInput.style.display = 'none';
-          eCollab.joinRealtimeCollaboration(eRoomInput.value);
-        };
-      } else {
-        // show the button to start the authorization flow.
-        goButton.onclick = function() {
-          eCollab.authorizeAndLoadApi(false, function(granted2) {
-            if (granted2) {
-              // realtime API ready.
-              goButton.style.display = 'none';
-              eRoomInput.style.display = 'none';
-              eCollab.joinRealtimeCollaboration(eRoomInput.value);
-            }
-          });
+    if (collab.collabOwner) {
+      nRoomLabel.innerHTML = 'room id: ' + fileId;
+      this.driveFm.createPath(this.dataFilesBaseDir, function() {
+        for (var i=0; i<dataFileArr.length; i++) {
+          loadFile(dataFileArr[i]);
         }
-      }
-    });
+      });
+    } else {
+      eRoomLabel.innerHTML = 'room id: ' + fileId;
+    }
+
+    // Start a chat session
+    var chatTextarea = document.getElementById('chattextarea');
+    var text = 'Has connected';
+    chatTextarea.innerHTML += '&#xA;' + collab.collaboratorInfo.mail + ': ' + text;
+    collab.sendChatMsg('Has connected');
   };
 
-  // This method is called when the collaboration has started and is ready
-  eCollab.onConnect = function(fileId) {
-    // a new object must be created and passed to setCollabObj because the collaboration object is immutable
-    this.setCollabObj({data: ++this.getCollabObj().data});
-    eRoomLabel.innerHTML = 'room id: ' + fileId;
-  };
+  // This method is called when a new chat msg is received
+  collab.onNewChatMessage = function(msgObj) {
+    var chatTextarea = document.getElementById('chattextarea');
+    var text = msgObj.user + ': ' + msgObj.msg;
+    chatTextarea.innerHTML += '&#xA;' + text;
+  }
 
-
-  eCollab.onDataFilesShared = function(collaboratorInfo, fObjArr) {
+  // This method is called when the collaboration owner has shared all data files with this collaborator
+  collab.onDataFilesShared = function(collaboratorInfo, fObjArr) {
 
     var logFileData = function(url, fileData) {
-
       console.log('File meta:  ', fileData.meta);
       console.log('File url:  ', url);
       if (strEndsWith(fileData.meta.title, ['json'])) {
@@ -162,26 +191,17 @@ require(['fmjs', 'gcjs'], function(fmjs, gcjs) {
   };
 
 
-    // Event handler for the directory loader button
-  var dirBtn = document.getElementById('dirbtn');
 
-  dirBtn.onchange = function(e) {
-    var files = e.target.files;
-    var fileObj;
+  // Event handler for the send msg button
+  var msgBtn = document.getElementById('msgbutton');
+  msgBtn.onclick = function() {
+    var chatTextarea = document.getElementById('chattextarea');
+    var chatInput = document.getElementById('chatinput');
+    var text = chatInput.value;
 
-    for (var i=0; i<files.length; i++) {
-      fileObj = files[i];
-      if ('webkitRelativePath' in fileObj) {
-        fileObj.fullPath = fileObj.webkitRelativePath;
-      } else if (!('fullPath' in fileObj)) {
-        fileObj.fullPath = fileObj.name;
-      }
-      dataFileArr.push({
-        'url': fileObj.fullPath,
-        'file': fileObj
-      });
-    }
-  };
+    chatTextarea.innerHTML += '&#xA;' + collab.collaboratorInfo.mail + ': ' + text;
+    collab.sendChatMsg(text);
+  }
 
 
   /**
