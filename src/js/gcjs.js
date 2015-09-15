@@ -400,7 +400,6 @@ define(['fmjs'], function(fmjs) {
          self.shareDataFiles(event.values[0]);
          self.collabIsOn = true;
          // generate the onConnect event for this user
-         console.log('file sharing collab list: ', collaboratorList.asArray());
          self.onConnect(event.values[0]);
        });
 
