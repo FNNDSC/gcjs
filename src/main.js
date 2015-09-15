@@ -109,8 +109,9 @@ require(['fmjs', 'gcjs'], function(fmjs, gcjs) {
   };
 
 
-  // This method is called when the collaboration has started and is ready
-  collab.onConnect = function(fileId) {
+  // This method is called by all connected instances just after a new instance connects to the
+  // collaboration session
+  collab.onConnect = function(collaboratorInfo) {
     var self = this;
     var fObjArr = [];
 
@@ -140,44 +141,60 @@ require(['fmjs', 'gcjs'], function(fmjs, gcjs) {
       }
     }
 
-    // a new object must be created and passed to setCollabObj because the collaboration object is immutable
-    this.setCollabObj({data: ++this.getCollabObj().data});
-    if (collab.collabOwner) {
-      nRoomLabel.innerHTML = 'room id: ' + fileId;
-      this.driveFm.createPath(this.dataFilesBaseDir, function() {
-        for (var i=0; i<dataFileArr.length; i++) {
-          loadFile(dataFileArr[i]);
-        }
-      });
+
+    if (this.collaboratorInfo.mail === collaboratorInfo.mail) {
+
+      // a new object must be created and passed to setCollabObj because the collaboration object is immutable
+      this.setCollabObj({data: ++this.getCollabObj().data});
+
+      if (this.collabOwner) {
+        nRoomLabel.innerHTML = 'room id: ' + this.realtimeFileId;
+        this.driveFm.createPath(this.dataFilesBaseDir, function() {
+          for (var i=0; i<dataFileArr.length; i++) {
+            loadFile(dataFileArr[i]);
+          }
+        });
+      } else {
+        eRoomLabel.innerHTML = 'room id: ' + this.realtimeFileId;
+      }
+
+      // Start a chat session
+      var chatTextarea = document.getElementById('chattextarea');
+      var text = 'Has connected';
+      chatTextarea.innerHTML += '&#xA;' + this.collaboratorInfo.name + ': ' + text;
+      this.sendChatMsg('Has connected');
+
     } else {
-      eRoomLabel.innerHTML = 'room id: ' + fileId;
+      console.log(collaboratorInfo.name + ' has connected');
     }
 
-    // Start a chat session
-    var chatTextarea = document.getElementById('chattextarea');
-    var text = 'Has connected';
-    chatTextarea.innerHTML += '&#xA;' + collab.collaboratorInfo.mail + ': ' + text;
-    collab.sendChatMsg('Has connected');
+    console.log('Current collaborators: ', this.getCollaboratorList());
+    console.log('I am: ', collaboratorInfo);
   };
 
-  // This method is called when a new chat msg is received
+  // This method when a remote collaborator instance disconnects from the collaboration session
+  collab.onDisconnect = function(collaboratorInfo) {
+    var chatTextarea = document.getElementById('chattextarea');
+    var text = 'Has disconnected';
+
+    chatTextarea.innerHTML += '&#xA;' + collaboratorInfo.name + ': ' + text;
+  }
+
+  // This method is called when a new chat msg is received from a remote collaborator
   collab.onNewChatMessage = function(msgObj) {
     var chatTextarea = document.getElementById('chattextarea');
     var text = msgObj.user + ': ' + msgObj.msg;
+
     chatTextarea.innerHTML += '&#xA;' + text;
   }
 
-  // This method is called when the collaboration owner has shared all data files with this collaborator
+  // This method is called by all connected instances when the collaboration owner has shared
+  // all data files with this collaborator
   collab.onDataFilesShared = function(collaboratorInfo, fObjArr) {
 
     var logFileData = function(url, fileData) {
-      console.log('File meta:  ', fileData.meta);
+      console.log('File data:  ', fileData);
       console.log('File url:  ', url);
-      if (strEndsWith(fileData.meta.title, ['json'])) {
-        console.log('File data:  ', JSON.parse(fileData.data));
-      } else {
-        console.log('File data:  ', fmjs.str2ab(fileData.data));
-      }
     }
 
     if (this.collaboratorInfo.mail === collaboratorInfo.mail) {
@@ -199,7 +216,7 @@ require(['fmjs', 'gcjs'], function(fmjs, gcjs) {
     var chatInput = document.getElementById('chatinput');
     var text = chatInput.value;
 
-    chatTextarea.innerHTML += '&#xA;' + collab.collaboratorInfo.mail + ': ' + text;
+    chatTextarea.innerHTML += '&#xA;' + collab.collaboratorInfo.name + ': ' + text;
     collab.sendChatMsg(text);
   }
 

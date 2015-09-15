@@ -48,8 +48,8 @@ define(['fmjs'], function(fmjs) {
       this.collabIsOn = false;
       // Whether the realtime file was created by this user
       this.collabOwner = false;
-      // Current collaborator's information (email)
-      this.collaboratorInfo = {mail: ""};
+      // Current collaborator's information (name, email)
+      this.collaboratorInfo = {name: "", mail: ""};
 
     };
 
@@ -117,18 +117,25 @@ define(['fmjs'], function(fmjs) {
        }
 
        if (collabObj) {
-         // if there is data then create new realtime file (this user is the collaboration owner)
-         this.createRealtimeFile(this.realtimeFilePath, function(fileResp) {
-           var perms = {
-             'value': '',
-             'type': 'anyone',
-             'role': 'writer'
-           };
 
-           self.collabOwner = true;
-           self.driveFm.shareFileById(fileResp.id, perms, function() {
-             self.realtimeFileId = fileResp.id;
-             gapi.drive.realtime.load(fileResp.id, onFileLoaded, initializeModel, handleErrors);
+         self.driveFm.getUserInfo(function(user) {
+
+           self.collaboratorInfo.mail = user.mail;
+           self.collaboratorInfo.name = user.name;
+
+           // if there is data then create new realtime file (this user is the collaboration owner)
+           self.createRealtimeFile(self.realtimeFilePath, function(fileResp) {
+             var perms = {
+               'value': '',
+               'type': 'anyone',
+               'role': 'writer'
+             };
+
+             self.collabOwner = true;
+             self.driveFm.shareFileById(fileResp.id, perms, function() {
+               self.realtimeFileId = fileResp.id;
+               gapi.drive.realtime.load(fileResp.id, onFileLoaded, initializeModel, handleErrors);
+             });
            });
          });
        }
@@ -156,8 +163,23 @@ define(['fmjs'], function(fmjs) {
 
        if (fileId) {
          // using existing realtime file (other user is the collaboration owner)
-         this.realtimeFileId = fileId;
-         gapi.drive.realtime.load(fileId, onFileLoaded, initializeModel, handleErrors);
+
+         self.driveFm.getUserInfo(function(user) {
+
+           self.collaboratorInfo.mail = user.mail;
+           self.collaboratorInfo.name = user.name;
+
+           // realtime file is explicitly shared with this collaborator to avoid anonymous user access
+           var perms = {
+             'value': user.mail,
+             'type': 'user',
+             'role': 'writer'
+           };
+           self.driveFm.shareFileById(fileId, perms, function() {
+             self.realtimeFileId = fileId;
+             gapi.drive.realtime.load(fileId, onFileLoaded, initializeModel, handleErrors);
+           });
+         });
        }
     };
 
@@ -166,17 +188,7 @@ define(['fmjs'], function(fmjs) {
      */
      gcjs.GDriveCollab.prototype.leaveRealtimeCollaboration = function() {
 
-       if (this.model) {
-         if (!this.collabOwner) {
-           var collaboratorList = this.model.getRoot().get('collaboratorList');
-
-           for (var i=0; i<collaboratorList.length; i++) {
-             if (collaboratorList.get(i).mail === this.collaboratorInfo.mail) {
-               break;
-             }
-           }
-           collaboratorList.remove(i);
-         }
+       if (this.doc) {
          this.doc.close();
          this.realtimeFileId = '';
          this.doc = null;
@@ -209,13 +221,13 @@ define(['fmjs'], function(fmjs) {
     };
 
     /**
-     * Get currently connected collaborator list
+     * Get currently connected collaborators
      *
      * @return {Array} list of currently connected collaborators.
      */
      gcjs.GDriveCollab.prototype.getCollaboratorList = function() {
-       if (this.model) {
-         return this.model.getRoot().get('collaboratorList').asArray();
+       if (this.doc) {
+         return this.doc.getCollaborators();
        }
     };
 
@@ -257,22 +269,27 @@ define(['fmjs'], function(fmjs) {
          var fileId;
          var collabDataFileList = this.model.getRoot().get('collabDataFileList');
          var collaboratorList = this.model.getRoot().get('collaboratorList');
+         var collaborator;
 
          var changeCollaboratorStatus = function() {
            if (++numSharedFiles === collabDataFileList.length) {
              // all files have been shared with this collaborator so set its hasDataFilesAccess to true
-             for (var i=0; i<collaboratorList.length; i++) {
-               if (collaboratorList.get(i).mail === collaboratorInfo.mail) {
-                 break;
-               }
-             }
-             collaboratorList.set(i, {mail: collaboratorInfo.mail, hasDataFilesAccess: true});
+             collaboratorList.set(idx, {name: collaboratorInfo.name, mail: collaboratorInfo.mail, hasDataFilesAccess: true});
            }
          };
 
-         for (var i=0; i<collabDataFileList.length; i++) {
-           fileId = collabDataFileList.get(i).id;
-           this.driveFm.shareFileById(fileId, perms, changeCollaboratorStatus);
+         for (var idx=0; idx<collaboratorList.length; idx++) {
+           collaborator = collaboratorList.get(idx);
+           if ((collaborator.mail === collaboratorInfo.mail) && !collaborator.hasDataFilesAccess) {
+             break;
+           }
+         }
+
+         if (idx<=collaboratorList.length) {
+           for (var j=0; j<collabDataFileList.length; j++) {
+             fileId = collabDataFileList.get(j).id;
+             this.driveFm.shareFileById(fileId, perms, changeCollaboratorStatus);
+           }
          }
        }
     };
@@ -284,17 +301,27 @@ define(['fmjs'], function(fmjs) {
      */
      gcjs.GDriveCollab.prototype.sendChatMsg = function(text) {
        if (this.model && text) {
-         this.model.getRoot().get('chatList').push({user: this.collaboratorInfo.mail, msg: text});
+         this.model.getRoot().get('chatList').push({user: this.collaboratorInfo.name, msg: text});
        }
     };
 
     /**
-     * This method is called just after starting the collaboration.
+     * This method is called by all connected instances just after a new instance connects to the
+     * collaboration session.
      *
-     * @param {String} Google Drive's realtime file id.
+     * @param {Obj} new collaborator info object.
      */
-     gcjs.GDriveCollab.prototype.onConnect = function(fileId) {
-       console.log('onConnect NOT overwritten. GDrive realtime file id: ' + fileId);
+     gcjs.GDriveCollab.prototype.onConnect = function(collaboratorInfo) {
+       console.log('onConnect NOT overwritten. ' + collaboratorInfo.name + ': has connected!');
+    };
+
+    /**
+     * This method is called everytime a remote collaborator disconnects from the collaboration session.
+     *
+     * @param {Obj} disconnected collaborator info object.
+     */
+     gcjs.GDriveCollab.prototype.onDisconnect = function(collaboratorInfo) {
+       console.log('onDisconnect NOT overwritten. ' + collaboratorInfo.name + ': has disconnected!');
     };
 
     /**
@@ -307,8 +334,8 @@ define(['fmjs'], function(fmjs) {
     };
 
     /**
-     * This method is called everytime the collaboration owner has share all its GDrive
-     * data files with a new collaborator.
+     * This method is called is called by all connected instances everytime the collaboration
+     * owner has share all its GDrive data files with a new collaborator.
      *
      * @param {Obj} new collaborator info object.
      * @param {Array} list of shared file objects. Each object has properties id: the
@@ -321,7 +348,7 @@ define(['fmjs'], function(fmjs) {
     };
 
     /**
-     * This method is called everytime a new chat message is received.
+     * This method is called everytime a new chat message is received from a remote collaborator.
      *
      * @param {Obj} new chat message object.
      */
@@ -368,16 +395,13 @@ define(['fmjs'], function(fmjs) {
        var collaboratorList = model.getRoot().get('collaboratorList');
        var chatList = model.getRoot().get('chatList');
 
-       // listen for changes on the collaboration object
-       collabMap.addEventListener(gapi.drive.realtime.EventType.OBJECT_CHANGED, function(event) {
-         if (!event.isLocal) {
-           self.onCollabObjChanged(collabMap.get('collabObj'));
-         }
-       });
-
-       // listen for new collaborator join events
+       // listen for collaborator join events
        collaboratorList.addEventListener(gapi.drive.realtime.EventType.VALUES_ADDED, function(event) {
          self.shareDataFiles(event.values[0]);
+         self.collabIsOn = true;
+         // generate the onConnect event for this user
+         console.log('file sharing collab list: ', collaboratorList.asArray());
+         self.onConnect(event.values[0]);
        });
 
        // listen for a collaborator status change event
@@ -391,7 +415,32 @@ define(['fmjs'], function(fmjs) {
          self.onDataFilesShared(event.newValues[0], fObjArr);
        });
 
-       // listen for new chat message join events
+        /*doc.addEventListener(gapi.drive.realtime.EventType.COLLABORATOR_JOINED, function(event) {
+          self.collaboratorInfo.sessionId = event.collaborator.sessionId;
+        });*/
+
+       // listen for new collaborator left events
+        doc.addEventListener(gapi.drive.realtime.EventType.COLLABORATOR_LEFT, function(event) {
+          var name = event.collaborator.displayName;
+          var collab;
+
+          for (var i=0; i<collaboratorList.length; i++) {
+            collab = collaboratorList.get(i);
+            if(collab.name === name) {
+              self.onDisconnect(collab);
+              break;
+            };
+          }
+        });
+
+       // listen for changes on the collaboration object
+       collabMap.addEventListener(gapi.drive.realtime.EventType.OBJECT_CHANGED, function(event) {
+         if (!event.isLocal) {
+           self.onCollabObjChanged(collabMap.get('collabObj'));
+         }
+       });
+
+       // listen for new chat message events
        chatList.addEventListener(gapi.drive.realtime.EventType.VALUES_ADDED, function(event) {
          if (!event.isLocal) {
            self.onNewChatMessage(event.values[0]);
@@ -401,16 +450,14 @@ define(['fmjs'], function(fmjs) {
        self.model = model;
        self.doc = doc;
 
-       self.driveFm.getUserInfo(function(user) {
-         self.collaboratorInfo.mail = user.mail;
-         if (!self.collabOwner) {
-           // generate the collaborator join event for this user
-           collaboratorList.push({mail: user.mail, hasDataFilesAccess: false});
-         }
-         self.collabIsOn = true;
-         // generate the onConnect event for this user
-         self.onConnect(self.realtimeFileId);
-       });
+       // generate a collaborator join event
+       if (self.collabOwner) {
+         collaboratorList.push({ name: this.collaboratorInfo.name,
+           mail: this.collaboratorInfo.mail, hasDataFilesAccess: true });
+       } else {
+         collaboratorList.push({ name: this.collaboratorInfo.name,
+           mail: this.collaboratorInfo.mail, hasDataFilesAccess: false});
+       }
      };
 
     /**
