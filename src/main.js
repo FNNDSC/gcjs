@@ -142,7 +142,7 @@ require(['fmjs', 'gcjs'], function(fmjs, gcjs) {
     }
 
 
-    if (this.collaboratorInfo.mail === collaboratorInfo.mail) {
+    if (this.collaboratorInfo.id === collaboratorInfo.id) {
 
       // a new object must be created and passed to setCollabObj because the collaboration object is immutable
       this.setCollabObj({data: ++this.getCollabObj().data});
@@ -197,7 +197,7 @@ require(['fmjs', 'gcjs'], function(fmjs, gcjs) {
       console.log('File url:  ', url);
     }
 
-    if (this.collaboratorInfo.mail === collaboratorInfo.mail) {
+    if (this.collaboratorInfo.id === collaboratorInfo.id) {
       for (var i=0; i<fObjArr.length; i++) {
         var url = fObjArr[i].url;
         // logFileData.bind(null, url)); allows to bind first arg of logFileData to fixed url

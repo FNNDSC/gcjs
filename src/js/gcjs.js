@@ -48,8 +48,8 @@ define(['fmjs'], function(fmjs) {
       this.collabIsOn = false;
       // Whether the realtime file was created by this user
       this.collabOwner = false;
-      // Current collaborator's information (name, email)
-      this.collaboratorInfo = {name: "", mail: ""};
+      // Current collaborator's information (realtime id, name, email)
+      this.collaboratorInfo = {id: "", name: "", mail: ""};
 
     };
 
@@ -274,13 +274,14 @@ define(['fmjs'], function(fmjs) {
          var changeCollaboratorStatus = function() {
            if (++numSharedFiles === collabDataFileList.length) {
              // all files have been shared with this collaborator so set its hasDataFilesAccess to true
-             collaboratorList.set(idx, {name: collaboratorInfo.name, mail: collaboratorInfo.mail, hasDataFilesAccess: true});
+             collaboratorList.set(idx, {id: collaboratorInfo.id, name: collaboratorInfo.name,
+               mail: collaboratorInfo.mail, hasDataFilesAccess: true});
            }
          };
 
          for (var idx=0; idx<collaboratorList.length; idx++) {
            collaborator = collaboratorList.get(idx);
-           if ((collaborator.mail === collaboratorInfo.mail) && !collaborator.hasDataFilesAccess) {
+           if ((collaborator.id === collaboratorInfo.id) && !collaborator.hasDataFilesAccess) {
              break;
            }
          }
@@ -449,12 +450,20 @@ define(['fmjs'], function(fmjs) {
        self.model = model;
        self.doc = doc;
 
+       // get this user realtime id
+       var collabs = doc.getCollaborators();
+       for (var i=0; i<collabs.length; i++) {
+         if (collabs[i].isMe) {
+           this.collaboratorInfo.id = collabs[i].sessionId;
+         }
+       }
+
        // generate a collaborator join event
        if (self.collabOwner) {
-         collaboratorList.push({ name: this.collaboratorInfo.name,
+         collaboratorList.push({ id: this.collaboratorInfo.id, name: this.collaboratorInfo.name,
            mail: this.collaboratorInfo.mail, hasDataFilesAccess: true });
        } else {
-         collaboratorList.push({ name: this.collaboratorInfo.name,
+         collaboratorList.push({ id: this.collaboratorInfo.id, name: this.collaboratorInfo.name,
            mail: this.collaboratorInfo.mail, hasDataFilesAccess: false});
        }
      };
