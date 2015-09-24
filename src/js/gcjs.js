@@ -421,12 +421,12 @@ define(['fmjs'], function(fmjs) {
 
        // listen for new collaborator left events
         doc.addEventListener(gapi.drive.realtime.EventType.COLLABORATOR_LEFT, function(event) {
-          var name = event.collaborator.displayName;
+          var id = event.collaborator.sessionId;
           var collab;
 
           for (var i=0; i<collaboratorList.length; i++) {
             collab = collaboratorList.get(i);
-            if(collab.name === name) {
+            if (collab.id === id) {
               self.onDisconnect(collab);
               break;
             };
