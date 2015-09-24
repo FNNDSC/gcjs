@@ -368,9 +368,7 @@ define(['fmjs'], function(fmjs) {
     /**
      * This function is called when the Realtime file has been loaded. It should
      * be used to initialize any user interface components and event handlers
-     * depending on the Realtime model. In this case, we listen for the OBJECT_CHANGED
-     * event on a collaborative map and for the VALUES_ADDED and VALUES_SET events on
-     * collaborative lists.
+     * depending on the Realtime model. 
      *
      * @param doc {gapi.drive.realtime.Document} the Realtime document.
      */

@@ -169,7 +169,7 @@ require(['fmjs', 'gcjs'], function(fmjs, gcjs) {
     }
 
     console.log('Current collaborators: ', this.getCollaboratorList());
-    console.log('I am: ', collaboratorInfo);
+    console.log('I am: ', this.collaboratorInfo.id);
   };
 
   // This method when a remote collaborator instance disconnects from the collaboration session
@@ -180,6 +180,7 @@ require(['fmjs', 'gcjs'], function(fmjs, gcjs) {
     chatTextarea.innerHTML += '&#xA;' + collaboratorInfo.name + ': ' + text;
     console.log(collaboratorInfo.name + ' has disconnected');
     console.log('Current collaborators: ', this.getCollaboratorList());
+    console.log('I am: ', this.collaboratorInfo.id);
   }
 
   // This method is called when a new chat msg is received from a remote collaborator
