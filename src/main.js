@@ -178,6 +178,8 @@ require(['fmjs', 'gcjs'], function(fmjs, gcjs) {
     var text = 'Has disconnected';
 
     chatTextarea.innerHTML += '&#xA;' + collaboratorInfo.name + ': ' + text;
+    console.log(collaboratorInfo.name + ' has disconnected');
+    console.log('Current collaborators: ', this.getCollaboratorList());
   }
 
   // This method is called when a new chat msg is received from a remote collaborator
