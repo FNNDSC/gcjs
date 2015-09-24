@@ -368,7 +368,7 @@ define(['fmjs'], function(fmjs) {
     /**
      * This function is called when the Realtime file has been loaded. It should
      * be used to initialize any user interface components and event handlers
-     * depending on the Realtime model. 
+     * depending on the Realtime model.
      *
      * @param doc {gapi.drive.realtime.Document} the Realtime document.
      */
@@ -418,7 +418,7 @@ define(['fmjs'], function(fmjs) {
             if (collab.id === id) {
               collaboratorList.remove(i);
               break;
-            };
+            }
           }
         });
 
@@ -446,7 +446,7 @@ define(['fmjs'], function(fmjs) {
            name: user.name,
            mail: user.mail,
            hasDataFilesAccess: false
-         }
+         };
 
          // get this user realtime id
          var collabs = doc.getCollaborators();
