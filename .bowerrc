@@ -1,3 +1,6 @@
 {
-  "directory": "src/js/components"
+  "directory": "src/js/components",
+  "registry": "http://bower.herokuapp.com",
+  "proxy" : "http://proxy.tch.harvard.edu:3128",
+  "strict-ssl": false
 }
