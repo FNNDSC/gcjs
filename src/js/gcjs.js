@@ -37,7 +37,7 @@ define(['fmjs'], function(fmjs) {
       // Google drive's data files' base directory
       this.dataFilesBaseDir = '/realtimeviewer/data';
       // File manager instance
-      this.driveFm = new fmjs.GDriveFileManager(clientId);
+      this.fileManager = new fmjs.GDriveFileManager(clientId);
       // Has Google Drive Realtime API been loaded?
       this.driveRtApiLoaded = false;
       // Realtime collaboration model
@@ -62,7 +62,7 @@ define(['fmjs'], function(fmjs) {
      gcjs.GDriveCollab.prototype.authorizeAndLoadApi = function(immediate, callback) {
        var self = this;
 
-       this.driveFm.requestFileSystem(immediate, function(granted) {
+       this.fileManager.requestFileSystem(immediate, function(granted) {
          if (granted) {
            // GDrive FS granted then load the realtime API if not already loaded
            if (!self.driveRtApiLoaded) {
@@ -87,7 +87,7 @@ define(['fmjs'], function(fmjs) {
      */
      gcjs.GDriveCollab.prototype.createRealtimeFile = function(filePath, callback) {
 
-       this.driveFm.createFile(filePath, this.REALTIME_MIMETYPE, function(fileResp) {
+       this.fileManager.createFile(filePath, this.REALTIME_MIMETYPE, function(fileResp) {
          if (callback) {
            callback(fileResp);
          }
@@ -128,7 +128,7 @@ define(['fmjs'], function(fmjs) {
 
            self.collabOwner = true;
 
-           self.driveFm.shareFileById(fileResp.id, perms, function() {
+           self.fileManager.shareFileById(fileResp.id, perms, function() {
              self.realtimeFileId = fileResp.id;
              gapi.drive.realtime.load(fileResp.id, onFileLoaded, initializeModel, handleErrors);
            });
@@ -271,7 +271,7 @@ define(['fmjs'], function(fmjs) {
          if (idx<=collaboratorList.length) {
            for (var j=0; j<collabDataFileList.length; j++) {
              fileId = collabDataFileList.get(j).id;
-             this.driveFm.shareFileById(fileId, perms, changeCollaboratorStatus);
+             this.fileManager.shareFileById(fileId, perms, changeCollaboratorStatus);
            }
          }
        }
@@ -439,7 +439,7 @@ define(['fmjs'], function(fmjs) {
        self.model = model;
        self.doc = doc;
 
-       self.driveFm.getUserInfo(function(user) {
+       self.fileManager.getUserInfo(function(user) {
 
          var collaboratorInfo = {
            id: '',
@@ -472,7 +472,7 @@ define(['fmjs'], function(fmjs) {
        var self = this;
 
        if(e.type === gapi.drive.realtime.ErrorType.TOKEN_REFRESH_REQUIRED) {
-         self.driveFm.authorize(true, function(granted) {
+         self.fileManager.authorize(true, function(granted) {
            if (granted) {
              console.log("Auth token successfuly refreshed!");
            } else {
