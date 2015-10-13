@@ -124,7 +124,7 @@ require(['utiljs', 'gcjs'], function(util, gc) {
       var url = fileObj.url || fileObj;
 
       reader.onload = function() {
-        self.driveFm.writeFile(self.dataFilesBaseDir + '/' + fileObj.name, reader.result, function(fileResp) {
+        self.fileManager.writeFile(self.dataFilesBaseDir + '/' + fileObj.name, reader.result, function(fileResp) {
           fObjArr.push({id: fileResp.id, url: url});
           if (fObjArr.length===dataFileArr.length) {
             // all data files have been uploaded to GDrive
@@ -151,7 +151,7 @@ require(['utiljs', 'gcjs'], function(util, gc) {
 
       if (this.collabOwner) {
         nRoomLabel.innerHTML = 'room id: ' + this.realtimeFileId;
-        this.driveFm.createPath(this.dataFilesBaseDir, function() {
+        this.fileManager.createPath(this.dataFilesBaseDir, function() {
           for (var i=0; i<dataFileArr.length; i++) {
             loadFile(dataFileArr[i]);
           }
@@ -207,7 +207,7 @@ require(['utiljs', 'gcjs'], function(util, gc) {
         var url = fObjArr[i].url;
         // logFileData.bind(null, url)); allows to bind first arg of logFileData to fixed url
         // effectively becoming a new callback with a single fileData argument
-        this.driveFm.readFileByID(fObjArr[i].id, logFileData.bind(null, url));
+        this.fileManager.readFileByID(fObjArr[i].id, logFileData.bind(null, url));
       }
     }
   };
