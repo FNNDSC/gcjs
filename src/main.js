@@ -2,13 +2,14 @@ require.config({
   baseUrl: 'js/components',
   paths: {
     gapi: 'https://apis.google.com/js/api',
+    utiljs: 'utiljs/src/js/utiljs',
     fmjs: 'fmjs/src/js/fmjs',
     gcjs: '../gcjs'
   }
 });
 
 
-require(['fmjs', 'gcjs'], function(fmjs, gcjs) {
+require(['utiljs', 'gcjs'], function(util, gc) {
 
   var CLIENT_ID = '1050768372633-ap5v43nedv10gagid9l70a2vae8p9nah.apps.googleusercontent.com';
   var eCollabButton = document.getElementById('existingcollabbutton');
@@ -16,7 +17,7 @@ require(['fmjs', 'gcjs'], function(fmjs, gcjs) {
   var nCollabButton = document.getElementById('newcollabbutton');
   var nRoomLabel = document.getElementById('newroomlabel');
   var scene = {data: 0};
-  var collab = new gcjs.GDriveCollab(CLIENT_ID);
+  var collab = new gc.GDriveCollab(CLIENT_ID);
   var dataFileArr = [];
 
   /**
@@ -49,6 +50,7 @@ require(['fmjs', 'gcjs'], function(fmjs, gcjs) {
       }
     });
   };
+
 
   /**
    * Request GDrive authorization and load the realtime Api, hide room id input and go
@@ -86,6 +88,7 @@ require(['fmjs', 'gcjs'], function(fmjs, gcjs) {
       }
     });
   };
+
 
   // Event handler for the directory loader button
   var dirBtn = document.getElementById('dirbtn');
@@ -135,12 +138,11 @@ require(['fmjs', 'gcjs'], function(fmjs, gcjs) {
         reader.readAsArrayBuffer(fileObj.file);
       } else {
         fileObj.name = url.substring(filePath.lastIndexOf('/') + 1);
-        fmjs.urlToBlob(url, function(blob) {
+        util.urlToBlob(url, function(blob) {
           reader.readAsArrayBuffer(blob);
         });
       }
     }
-
 
     if (this.collaboratorInfo.id === collaboratorInfo.id) {
 
@@ -211,7 +213,6 @@ require(['fmjs', 'gcjs'], function(fmjs, gcjs) {
   };
 
 
-
   // Event handler for the send msg button
   var msgBtn = document.getElementById('msgbutton');
   msgBtn.onclick = function() {
@@ -222,25 +223,5 @@ require(['fmjs', 'gcjs'], function(fmjs, gcjs) {
     chatTextarea.innerHTML += '&#xA;' + collab.collaboratorInfo.name + ': ' + text;
     collab.sendChatMsg(text);
   }
-
-
-  /**
-   * Utility function. Return true if the string str ends with any of the
-   * specified suffixes in arrayOfStr otherwise return false
-   *
-   * @param {String} input string
-   * @param {Array} array of string suffixes
-   */
-  strEndsWith = function(str, arrayOfStr) {
-    var index;
-
-    for (var i=0; i<arrayOfStr.length; i++) {
-      index = str.lastIndexOf(arrayOfStr[i]);
-      if ((index !== -1) && ((str.length-index) === arrayOfStr[i].length)) {
-        return true;
-      }
-    }
-    return false;
-  };
 
 });

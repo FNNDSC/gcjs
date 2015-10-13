@@ -10,7 +10,7 @@
  */
 
 // define a new module
-define(['fmjs'], function(fmjs) {
+define(['fmjs'], function(fm) {
 
   /**
    * Provide a namespace for the collaboration module
@@ -37,7 +37,7 @@ define(['fmjs'], function(fmjs) {
       // Google drive's data files' base directory
       this.dataFilesBaseDir = '/realtimeviewer/data';
       // File manager instance
-      this.fileManager = new fmjs.GDriveFileManager(clientId);
+      this.fileManager = new fm.GDriveFileManager(clientId);
       // Has Google Drive Realtime API been loaded?
       this.driveRtApiLoaded = false;
       // Realtime collaboration model

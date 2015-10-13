@@ -24,6 +24,7 @@
   ],
   "dependencies": {
     "requirejs": "~2.1.15",
+    "utiljs": "https://github.com/FNNDSC/utiljs.git#master",
     "fmjs": "https://github.com/FNNDSC/fmjs.git#master"
   }
 }
