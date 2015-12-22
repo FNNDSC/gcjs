@@ -31,21 +31,31 @@
         clear: left;
         margin: 10px;
       }
-      div#inputcontainer{
+      div#wholecontainer{
         overflow: auto;
       }
 
-      #msgbutton{
+      .custombtn{
         /*height: 100%;*/
         width: 120px;
       }
+
+      #mailtextarea{
+        display: block;
+      }
+
+      #mailcontainer{
+        margin-top: 20px;
+        display: none;
+      }
+    
     </style>
 
   </head>
 
   <body>
 
-    <div id="inputcontainer">
+    <div id="wholecontainer">
 
       <div class="collab">
         <button id="newcollabbutton" type="button">Create a new collab room!</button>
@@ -69,12 +79,16 @@
       </div>
 
       <div>
-        <textarea id="chattextarea" rows="8" cols="50">
-        </textarea>
+        <textarea id="chattextarea" rows="8" cols="50" disabled></textarea>
         <div>
-          <button id="msgbutton" type="button">Send msg</button>
+          <button id="msgbutton" class="custombtn" type="button">Send msg</button>
           <input id="chatinput" type="text" size="43">
         </div>
+      </div>
+
+      <div id="mailcontainer">
+        <textarea id="mailtextarea" rows="8" cols="50"></textarea>
+        <button id="sendmailbutton" class="custombtn" type="button">Send mail</button>
       </div>
 
     </div>
