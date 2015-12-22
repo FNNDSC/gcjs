@@ -6,13 +6,15 @@ Realtime REST API to implement real-time collaboration.
 
 The real-time collaboration is actually implemented by making the application data to be kept in sync
 among collaborators part of the GDrive Realtime Collaborative Data Model (RT-CDM). The <tt>gcjs.GDriveCollab</tt>
-class provides methods to get and set the RT-CDM and three event listeners that can be dynamically overwritten
+class provides methods to get and set the RT-CDM and five event listeners that can be dynamically overwritten
 on its object instances:
-* onConnect: called on an instance when it has successfully connected and collaboration is ready
-* onDataFilesShared: called on all connected instances every time the collaboration owner has shared all
-the data files in its GDrive with a new collaborator
-* onCollabObjChanged: called on all connected instances every time the RT-CDM is updated by any remote
-collaborator
+
+* onConnect: called by all connected instances just after a new instance connects to the collaboration session
+* onDataFilesShared: called by all connected instances everytime the collaboration owner has share all its GDrive
+data files with a new collaborator
+* onCollabObjChanged: called on all connected instances every time the RT-CDM is updated by any remote collaborator
+* onNewChatMessage: called on all connected instances everytime a new chat message is received from a remote collaborator
+* onDisconnect: called on all connected instances everytime a remote collaborator disconnects from the collaboration session
 
 Take a look at [viewerjs](https://github.com/FNNDSC/viewerjs) as an example project that uses a
 <tt>gcjs.GDriveCollab</tt> object.

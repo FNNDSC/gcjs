@@ -84,7 +84,7 @@ define(['fmjs'], function(fm) {
            });
 
          } else {
-           
+
            callback(false);
          }
        });
@@ -387,7 +387,7 @@ define(['fmjs'], function(fm) {
     };
 
     /**
-     * This method is called is called by all connected instances everytime the collaboration
+     * This method is called by all connected instances everytime the collaboration
      * owner has share all its GDrive data files with a new collaborator.
      *
      * @param {Obj} new collaborator info object.
