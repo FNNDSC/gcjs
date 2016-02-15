@@ -1,20 +1,18 @@
 {
-  "name": "gcjs",
+  "name": "utiljs",
   "version": "0.1.0",
-  "description": "Google drive-based realtime collaboration module",
+  "description": "JavaScript utility module",
   "keywords": [
+    "util",
     "html5",
-    "cloud",
-    "realtime",
-    "google",
-    "drive"
+    "javascript"
   ],
   "author": "Jorge Bernal Rusiel ",
-  "homepage": "https://github.com/FNNDSC/gcjs",
+  "homepage": "https://github.com/FNNDSC/utiljs",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/FNNDSC/gcjs.git"
+    "url": "https://github.com/FNNDSC/utiljs.git"
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"

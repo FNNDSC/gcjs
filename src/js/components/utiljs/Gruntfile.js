@@ -13,9 +13,9 @@ module.exports = function(grunt) {
       ' Licensed <%= _.pluck(pkg.licenses, "type").join(", ") %> */\n',
 
     // Custome Paths
-    srcFiles: ['src/js/*.js'], // source files
+    srcFiles: ['src/js/utiljs.js'], // source files
     componentsDir: 'bower_components', // bower components
-    testFiles: ['spec/*.spec.js'], // test files (jasmine specs)
+    testFiles: ['spec/*.spec.js'], // test files (jasmin' specs)
 
     // Task configuration.
     jscs: { // check javascript style
@@ -49,7 +49,6 @@ module.exports = function(grunt) {
         src: '<%= jscs.test.src %>'
       }
     },
-
 
     connect: {
       test: {
@@ -87,8 +86,8 @@ module.exports = function(grunt) {
       compile: {
         options: {
           baseUrl: '.',
-          include: 'dist/<%= pkg.name %>/src/js/<%= pkg.name %>.js',
-          mainConfigFile: 'dist/<%= pkg.name %>/src/js/<%= pkg.name %>.js',
+          include: 'dist/<%= pkg.name %>/src/js/utiljs.js',
+          mainConfigFile: 'dist/<%= pkg.name %>/src/js/utiljs.js',
           out: 'dist/<%= pkg.name %>.min.js'
         }
       }
@@ -176,18 +175,17 @@ module.exports = function(grunt) {
       'watch'
     ]);
   });
-  // Test task.
 
   // Build task.
   grunt.registerTask('build',
     ['jscs', 'jshint', 'connect', 'jasmine', 'copy', 'requirejs']);
 
+  // Test task.
   grunt.registerTask('test', ['connect', 'jscs', 'jshint', 'jasmine']);
   // Build task.
   //grunt.registerTask('build', ['cssmin', 'test', 'requirejs', 'copy']);
 
   // Default task.
-  grunt.registerTask('default',
-    ['build']);
+  grunt.registerTask('default', ['build']);
 
 };

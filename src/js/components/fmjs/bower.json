@@ -1,15 +1,15 @@
 {
-  "name": "gcjs",
+  "name": "fmjs",
   "version": "0.1.0",
-  "homepage": "https://github.com/FNNDSC/gcjs",
+  "homepage": "https://github.com/FNNDSC/fmjs",
   "authors": [
     "Jorge <jbernal0019@yahoo.es>"
   ],
-  "description": "Google drive-based realtime collaboration module",
+  "description": "File manager",
   "keywords": [
     "html5",
     "cloud",
-    "realtime",
+    "filesystem",
     "google",
     "drive"
   ],
@@ -18,12 +18,12 @@
     "**/.*",
     "node_modules",
     "bower_components",
+    "src/components",
     "test",
     "tests"
   ],
   "dependencies": {
     "requirejs": "~2.1.15",
-    "utiljs": "https://github.com/FNNDSC/utiljs.git#refactor",
-    "fmjs": "https://github.com/FNNDSC/fmjs.git#refactor"
+    "utiljs": "https://github.com/FNNDSC/utiljs.git#refactor"
   }
 }

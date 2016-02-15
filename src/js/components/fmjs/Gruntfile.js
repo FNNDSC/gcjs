@@ -13,9 +13,9 @@ module.exports = function(grunt) {
       ' Licensed <%= _.pluck(pkg.licenses, "type").join(", ") %> */\n',
 
     // Custome Paths
-    srcFiles: ['src/js/*.js'], // source files
+    srcFiles: ['src/js/fmjs.js'], // source files
+    testFiles: ['spec/*.spec.js'], // test files (jasmin' specs)
     componentsDir: 'bower_components', // bower components
-    testFiles: ['spec/*.spec.js'], // test files (jasmine specs)
 
     // Task configuration.
     jscs: { // check javascript style
@@ -50,11 +50,10 @@ module.exports = function(grunt) {
       }
     },
 
-
-    connect: {
+ connect: {
       test: {
         options: {
-          port: 8001,
+          port: 8000,
           base: [
             '.',
             'bower_components'
@@ -68,8 +67,8 @@ module.exports = function(grunt) {
         // comment when using the define function within the specs files
         //src: '<%= jshint.source.src %>',
         options: {
-          host: 'http://<%= connect.test.options.hostname %>:<%= connect.test.options.port %>/',
-          src: '<%= jshint.source.src %>',
+          debug: true,
+          host: 'http://localhost:8000/',
           specs: '<%= jshint.test.src %>',
           template: require('grunt-template-jasmine-requirejs'),
           templateOptions: {
@@ -87,8 +86,8 @@ module.exports = function(grunt) {
       compile: {
         options: {
           baseUrl: '.',
-          include: 'dist/<%= pkg.name %>/src/js/<%= pkg.name %>.js',
-          mainConfigFile: 'dist/<%= pkg.name %>/src/js/<%= pkg.name %>.js',
+          include: 'dist/<%= pkg.name %>/src/js/fmjs.js',
+          mainConfigFile: 'dist/<%= pkg.name %>/src/js/fmjs.js',
           out: 'dist/<%= pkg.name %>.min.js'
         }
       }
@@ -152,7 +151,6 @@ module.exports = function(grunt) {
   });
 
   // These plugins provide necessary tasks.
-  grunt.loadNpmTasks('grunt-contrib-connect');
   grunt.loadNpmTasks('grunt-contrib-copy');
   grunt.loadNpmTasks('grunt-contrib-jasmine');
   grunt.loadNpmTasks('grunt-contrib-jshint');
@@ -171,20 +169,18 @@ module.exports = function(grunt) {
     //   'watch']);
     // }
 
-    grunt.task.run([
+  grunt.task.run([
       'browserSync:dev',
       'watch'
     ]);
   });
   // Test task.
+  grunt.registerTask('test',
+    ['jscs', 'jshint', 'connect', 'jasmine']);
 
   // Build task.
   grunt.registerTask('build',
     ['jscs', 'jshint', 'connect', 'jasmine', 'copy', 'requirejs']);
-
-  grunt.registerTask('test', ['connect', 'jscs', 'jshint', 'jasmine']);
-  // Build task.
-  //grunt.registerTask('build', ['cssmin', 'test', 'requirejs', 'copy']);
 
   // Default task.
   grunt.registerTask('default',

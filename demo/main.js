@@ -1,15 +1,6 @@
-require.config({
-  baseUrl: 'js/components',
-  paths: {
-    gapi: 'https://apis.google.com/js/api',
-    utiljs: 'utiljs/src/js/utiljs',
-    fmjs: 'fmjs/src/js/fmjs',
-    gcjs: '../gcjs'
-  }
-});
+require(['./config'], function() {
 
-
-require(['utiljs', 'gcjs'], function(util, gc) {
+require(['utiljsPackage', 'gcjsPackage'], function(util, gc) {
 
   var CLIENT_ID = '1050768372633-ap5v43nedv10gagid9l70a2vae8p9nah.apps.googleusercontent.com';
   var eCollabButton = document.getElementById('existingcollabbutton');
@@ -54,7 +45,7 @@ require(['utiljs', 'gcjs'], function(util, gc) {
               collab.startRealtimeCollaboration(scene);
             }
           });
-        }
+        };
       }
     });
   };
@@ -101,7 +92,7 @@ require(['utiljs', 'gcjs'], function(util, gc) {
               collab.joinRealtimeCollaboration(eRoomInput.value);
             }
           });
-        }
+        };
       }
     });
   };
@@ -228,7 +219,7 @@ require(['utiljs', 'gcjs'], function(util, gc) {
     console.log(collaboratorInfo.name + ' has disconnected');
     console.log('Current collaborators: ', this.getCollaboratorList());
     console.log('I am: ', this.collaboratorInfo.id);
-  }
+  };
 
   // This method is called when a new chat msg is received from a remote collaborator
   collab.onNewChatMessage = function(msgObj) {
@@ -237,7 +228,7 @@ require(['utiljs', 'gcjs'], function(util, gc) {
     var text = msgObj.user + ': ' + msgObj.msg;
 
     chatTextarea.innerHTML += '&#xA;' + text;
-  }
+  };
 
   // This method is called by all connected instances when the collaboration owner has shared
   // all data files with this collaborator
@@ -247,7 +238,7 @@ require(['utiljs', 'gcjs'], function(util, gc) {
 
       console.log('File data:  ', fileData);
       console.log('File url:  ', url);
-    }
+    };
 
     if (this.collaboratorInfo.id === collaboratorInfo.id) {
 
@@ -274,7 +265,7 @@ require(['utiljs', 'gcjs'], function(util, gc) {
 
     chatTextarea.innerHTML += '&#xA;' + collab.collaboratorInfo.name + ': ' + text;
     collab.sendChatMsg(text);
-  }
+  };
 
   // Event handler for the send mail button
   var sendmailBtn = document.getElementById('sendmailbutton');
@@ -310,7 +301,8 @@ require(['utiljs', 'gcjs'], function(util, gc) {
         console.error('Could not send mail with realtime file id');
       }
     });
-  }
+  };
 
 
+});
 });

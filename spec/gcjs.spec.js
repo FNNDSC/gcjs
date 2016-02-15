@@ -3,7 +3,7 @@
  *
  */
 
-define(['gcjs'], function(gcjs) {
+define(['gcjsPackage'], function(gcjs) {
 
   describe('gcjs', function() {
     var collab;
@@ -12,8 +12,8 @@ define(['gcjs'], function(gcjs) {
       collab = new gcjs.GDriveCollab('358010366372-o8clkqjol0j533tp6jlnpjr2u2cdmks6.apps.googleusercontent.com');
     });
 
-    it('driveFm.getUserInfo returns object with property mail', function () {
-        expect(collab.fileManager.getUserInfo(function(user) {
+    it('driveFm.getUserInfo returns object with property mail', function() {
+      expect(collab.fileManager.getUserInfo(function(user) {
           return user.mail;
         })).toEqual('admin@babymri.org');
     });

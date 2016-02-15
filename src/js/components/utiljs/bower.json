@@ -1,0 +1,26 @@
+{
+  "name": "utiljs",
+  "version": "0.1.0",
+  "homepage": "https://github.com/FNNDSC/utiljs",
+  "authors": [
+    "Jorge <jbernal0019@yahoo.es>"
+  ],
+  "description": "JavaScript utility module",
+  "keywords": [
+    "html5",
+    "javascript",
+    "util"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "src/components",
+    "test",
+    "tests"
+  ],
+  "dependencies": {
+    "requirejs": "~2.1.15"
+  }
+}
