@@ -311,10 +311,9 @@ define(
            'role': 'reader'
          };
 
-        var fileId;
         var collabDataFileList = this.model.getRoot().get('collabDataFileList');
         var collaboratorList = this.model.getRoot().get('collaboratorList');
-        var collaborator;
+        var collaborator, idx, fileId;
 
         var changeCollaboratorStatus = function() {
 
@@ -326,7 +325,7 @@ define(
           }
         };
 
-        for (var idx = 0; idx < collaboratorList.length; idx++) {
+        for (idx = 0; idx < collaboratorList.length; idx++) {
 
           collaborator = collaboratorList.get(idx);
 

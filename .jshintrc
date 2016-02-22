@@ -14,6 +14,6 @@
   "globals": {
     "jQuery": true, "$": true, "X": true, "dicomParser": true, "console": true, "alert": true,
     "require": true, "describe": true, "it": true, "expect": true, "beforeEach": true,
-    "afterEach": true, "define": true
+    "afterEach": true, "define": true, "gapi": true
     }
 }
