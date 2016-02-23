@@ -1,6 +1,6 @@
 require(['./config'], function() {
 
-  require(['utiljsPackage', 'gcjsPackage'], function(util, gc) {
+  require(['utiljs', 'gcjs'], function(util, gc) {
 
     var CLIENT_ID = '1050768372633-ap5v43nedv10gagid9l70a2vae8p9nah.apps.googleusercontent.com';
     var eCollabButton = document.getElementById('existingcollabbutton');

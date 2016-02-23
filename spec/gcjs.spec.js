@@ -3,7 +3,7 @@
  *
  */
 
-define(['gcjsPackage'], function(gcjs) {
+define(['gcjs'], function(gcjs) {
 
   describe('gcjs', function() {
     var collab;

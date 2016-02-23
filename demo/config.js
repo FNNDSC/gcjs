@@ -6,14 +6,14 @@ require.config({
 
     // bower packages
     {
-      name: 'utiljsPackage', // used for mapping...
+      name: 'utiljs', // used for mapping...
       location: 'utiljs/src',   // relative to base url
       main: 'js/utiljs'
     },
 
     // local package
     {
-      name: 'gcjsPackage', // used for mapping...
+      name: 'gcjs', // used for mapping...
       location: './', // relative to base url
       main: 'gcjs/src/js/gcjs'
     }
